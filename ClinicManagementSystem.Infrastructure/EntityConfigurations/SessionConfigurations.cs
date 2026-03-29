@@ -18,8 +18,8 @@ namespace ClinicManagementSystem.Infrastructure.EntityConfigurations
 
             // 3. Relationships - Delete Behavior
             builder.HasOne(s => s.Appointment)
-                .WithMany(a => a.Sessions)
-                .HasForeignKey(s => s.AppointmentId)
+                .WithOne(a => a.Session)
+                .HasForeignKey<Session>(s => s.AppointmentId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(s => s.Patient)

@@ -31,10 +31,11 @@ namespace ClinicManagementSystem.Infrastructure.EntityConfigurations
                 .HasForeignKey(a => a.AppointmentStateId)
                 .OnDelete(DeleteBehavior.Restrict);
             //Many Sessions
-            builder.HasMany(a => a.Sessions)
+            builder.HasOne(a => a.Session)
                 .WithOne(s => s.Appointment)
-                .HasForeignKey(s => s.AppointmentId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey<Session>(s => s.AppointmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             //// 4. Indexes
             builder.HasIndex(a => a.PatientId);
 
