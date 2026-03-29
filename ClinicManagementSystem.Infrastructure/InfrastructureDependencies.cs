@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace ClinicManagementSystem.Infrastructure
 {
-    public static class ServiceCollectionExtensions
+    public static class InfrastructureDependencies
     {
         public static IServiceCollection AddInfrastructure(
             this IServiceCollection services,
