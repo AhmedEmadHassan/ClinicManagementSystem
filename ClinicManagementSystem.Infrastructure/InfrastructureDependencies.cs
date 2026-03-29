@@ -1,4 +1,8 @@
-﻿using ClinicManagementSystem.Infrastructure.Context;
+﻿using ClinicManagementSystem.Application.RepositoryInterfaces;
+using ClinicManagementSystem.Application.UnitOfWork;
+using ClinicManagementSystem.Infrastructure.Context;
+using ClinicManagementSystem.Infrastructure.Repositories;
+using ClinicManagementSystem.Infrastructure.Repositories.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,8 +19,21 @@ namespace ClinicManagementSystem.Infrastructure
                 options.UseSqlServer(
                     configuration.GetConnectionString("SqlServerConnection")
                 ));
-
+            AddDependencyInjection(services, configuration);
             return services;
+        }
+        public static void AddDependencyInjection(IServiceCollection services,
+            IConfiguration configuration)
+        {
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+            services.AddScoped<IAppointmentStateRepository, AppointmentStateRepository>();
+            services.AddScoped<IBillingRepository, BillingRepository>();
+            services.AddScoped<IDoctorRepository, DoctorRepository>();
+            services.AddScoped<IDoctorSpecializationRepository, DoctorSpecializationRepository>();
+            services.AddScoped<IPatientRepository, PatientRepository>();
+            services.AddScoped<ISessionRepository, SessionRepository>();
+
         }
     }
 }
