@@ -1,3 +1,4 @@
+using ClinicManagementSystem.API.Middlewares;
 using ClinicManagementSystem.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +16,9 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
+#region Use Middlewares
+app.UseMiddleware<GlobalExceptionMiddleware>();
+#endregion
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

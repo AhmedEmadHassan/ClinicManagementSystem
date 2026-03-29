@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ClinicManagementSystem.Application\ClinicManagementSystem.Application.csproj" />
     <ProjectReference Include="..\ClinicManagementSystem.Infrastructure\ClinicManagementSystem.Infrastructure.csproj" />
   </ItemGroup>
 
