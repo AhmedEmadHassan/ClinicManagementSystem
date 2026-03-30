@@ -11,7 +11,7 @@ namespace ClinicManagementSystem.API.Middlewares
             _logger = logger;
             _next = next;
         }
-        public async void InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context)
         {
 
             try

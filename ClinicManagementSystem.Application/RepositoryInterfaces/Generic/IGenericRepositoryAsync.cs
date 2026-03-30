@@ -1,4 +1,6 @@
-﻿namespace ClinicManagementSystem.Application.RepositoryInterfaces.Generic
+﻿using System.Linq.Expressions;
+
+namespace ClinicManagementSystem.Application.RepositoryInterfaces.Generic
 {
     public interface IGenericRepositoryAsync<T> where T : class
     {
@@ -15,5 +17,8 @@
         Task UpdateAsync(T entity);
         Task UpdateRangeAsync(ICollection<T> entities);
         Task DeleteAsync(T entity);
+        // New
+        Task<List<T>> GetAllAsync();
+        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
     }
 }

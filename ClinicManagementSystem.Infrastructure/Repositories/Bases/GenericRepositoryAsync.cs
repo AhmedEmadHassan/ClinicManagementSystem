@@ -1,6 +1,7 @@
 ﻿using ClinicManagementSystem.Application.RepositoryInterfaces.Generic;
 using ClinicManagementSystem.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 
 namespace ClinicManagementSystem.Infrastructure.Repositories.Bases
@@ -103,6 +104,16 @@ namespace ClinicManagementSystem.Infrastructure.Repositories.Bases
         {
             _dbContext.Set<T>().UpdateRange(entities);
             //await _dbContext.SaveChangesAsync();
+        }
+
+        public async Task<List<T>> GetAllAsync()
+        {
+            return await _dbContext.Set<T>().AsNoTracking().ToListAsync();
+        }
+
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbContext.Set<T>().AnyAsync(predicate);
         }
         #endregion
     }
