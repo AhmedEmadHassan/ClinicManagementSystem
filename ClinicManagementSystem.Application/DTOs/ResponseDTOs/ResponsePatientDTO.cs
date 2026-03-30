@@ -2,7 +2,7 @@
 
 namespace ClinicManagementSystem.Application.DTOs.ResponseDTOs
 {
-    public class PatientResponseDTO : PersonResponseDTO
+    public class ResponsePatientDTO : ResponsePersonDTO
     {
 
     }

@@ -2,7 +2,7 @@
 
 namespace ClinicManagementSystem.Application.DTOs.ResponseDTOs
 {
-    public class DoctorResponseDTO : PersonCreateDTO
+    public class ResponseDoctorDTO : CreatePersonDTO
     {
         public int DoctorSpecializationId { get; set; }
         public string DoctorSpecializationName { get; set; } = string.Empty;

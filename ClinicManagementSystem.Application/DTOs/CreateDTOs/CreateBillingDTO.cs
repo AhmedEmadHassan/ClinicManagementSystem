@@ -1,6 +1,6 @@
 ﻿namespace ClinicManagementSystem.Application.DTOs.CreateDTOs
 {
-    public class BillingCreateDTO
+    public class CreateBillingDTO
     {
         public int Id { get; set; }
         public int SessionId { get; set; }

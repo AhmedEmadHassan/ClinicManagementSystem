@@ -1,6 +1,6 @@
 ﻿namespace ClinicManagementSystem.Application.DTOs.ResponseDTOs
 {
-    public class BillingResponseDTO
+    public class ResponseBillingDTO
     {
         public int Id { get; set; }
         public int SessionId { get; set; }

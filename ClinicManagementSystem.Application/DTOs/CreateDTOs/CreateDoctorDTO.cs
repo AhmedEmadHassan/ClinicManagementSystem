@@ -2,7 +2,7 @@
 
 namespace ClinicManagementSystem.Application.DTOs.CreateDTOs
 {
-    public class DoctorCreateDTO : PersonCreateDTO
+    public class CreateDoctorDTO : CreatePersonDTO
     {
         public int DoctorSpecializationId { get; set; }
     }

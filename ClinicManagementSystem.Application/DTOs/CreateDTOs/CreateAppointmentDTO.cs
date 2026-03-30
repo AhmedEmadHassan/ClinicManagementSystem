@@ -1,6 +1,6 @@
-﻿namespace ClinicManagementSystem.Application.DTOs.ResponseDTOs
+﻿namespace ClinicManagementSystem.Application.DTOs.CreateDTOs
 {
-    public class AppointmentCreateDTO
+    public class CreateAppointmentDTO
     {
         public int Id { get; set; }
         public int PatientId { get; set; }
@@ -10,8 +10,5 @@
         public TimeOnly? AppointmentTime { get; set; }
         public string? Notes { get; set; }
         public DateTime CreatedAt { get; set; }
-        public string PatientName { get; set; }
-        public string DoctorName { get; set; }
-        public string AppointmentStateName { get; set; }
     }
 }

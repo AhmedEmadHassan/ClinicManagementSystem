@@ -1,6 +1,6 @@
-﻿namespace ClinicManagementSystem.Application.DTOs.ResponseDTOs.Abstract
+﻿namespace ClinicManagementSystem.Application.DTOs.CreateDTOs.Abstract
 {
-    public abstract class PersonResponseDTO
+    public abstract class CreatePersonDTO
     {
         public int Id { get; set; }
         public string Name { get; set; }
