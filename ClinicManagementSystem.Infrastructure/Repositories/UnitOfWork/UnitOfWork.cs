@@ -1,5 +1,5 @@
 ﻿using ClinicManagementSystem.Application.RepositoryInterfaces;
-using ClinicManagementSystem.Application.UnitOfWork;
+using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
 using ClinicManagementSystem.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore.Storage;
 

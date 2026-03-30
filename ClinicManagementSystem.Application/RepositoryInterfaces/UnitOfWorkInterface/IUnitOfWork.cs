@@ -1,6 +1,4 @@
-﻿using ClinicManagementSystem.Application.RepositoryInterfaces;
-
-namespace ClinicManagementSystem.Application.UnitOfWork
+﻿namespace ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface
 {
     public interface IUnitOfWork : IDisposable
     {
