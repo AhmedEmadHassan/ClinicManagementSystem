@@ -2,9 +2,10 @@
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
+using ClinicManagementSystem.Application.Services.Abstraction;
 using ClinicManagementSystem.Domain.Entities;
 
-namespace ClinicManagementSystem.Application.Services
+namespace ClinicManagementSystem.Application.Services.Implementation
 {
     public class DoctorSpecializationService : IDoctorSpecializationService
     {

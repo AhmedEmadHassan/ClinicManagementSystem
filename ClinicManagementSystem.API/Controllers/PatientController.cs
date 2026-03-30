@@ -7,11 +7,11 @@ namespace ClinicManagementSystem.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class DoctorSpecializationController : ControllerBase
+    public class PatientController : ControllerBase
     {
-        private readonly IDoctorSpecializationService _service;
+        private readonly IPatientService _service;
 
-        public DoctorSpecializationController(IDoctorSpecializationService service)
+        public PatientController(IPatientService service)
         {
             _service = service;
         }
@@ -38,21 +38,21 @@ namespace ClinicManagementSystem.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateDoctorSpecializationDTO dto)
+        public async Task<IActionResult> Create([FromBody] CreatePatientDTO dto)
         {
             try
             {
                 var result = await _service.Create(dto);
                 return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
             }
-            catch (DuplicateException ex)
+            catch (BadRequestException ex)
             {
-                return Conflict(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] CreateDoctorSpecializationDTO dto)
+        public async Task<IActionResult> Update(int id, [FromBody] CreatePatientDTO dto)
         {
             try
             {
@@ -63,9 +63,9 @@ namespace ClinicManagementSystem.API.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (DuplicateException ex)
+            catch (BadRequestException ex)
             {
-                return Conflict(ex.Message);
+                return BadRequest(ex.Message);
             }
         }
 

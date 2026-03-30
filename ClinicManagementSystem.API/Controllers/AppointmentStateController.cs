@@ -1,6 +1,6 @@
 ﻿using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.Exceptions;
-using ClinicManagementSystem.Application.Services;
+using ClinicManagementSystem.Application.Services.Abstraction;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicManagementSystem.API.Controllers

@@ -1,4 +1,4 @@
-﻿namespace ClinicManagementSystem.Application.Services.GenericInterface
+﻿namespace ClinicManagementSystem.Application.Services.Abstraction.GenericInterface
 {
     public interface IGenericService<TResponseDto, TCreateDto, TUpdateDto>
     {

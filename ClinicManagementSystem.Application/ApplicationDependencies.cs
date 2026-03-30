@@ -1,4 +1,5 @@
-﻿using ClinicManagementSystem.Application.Services;
+﻿using ClinicManagementSystem.Application.Services.Abstraction;
+using ClinicManagementSystem.Application.Services.Implementation;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ClinicManagementSystem.Application
@@ -16,6 +17,8 @@ namespace ClinicManagementSystem.Application
         {
             services.AddScoped<IDoctorSpecializationService, DoctorSpecializationService>();
             services.AddScoped<IAppointmentStateService, AppointmentStateService>();
+            services.AddScoped<IDoctorService, DoctorService>();
+            services.AddScoped<IPatientService, PatientService>();
         }
     }
 }

@@ -4,7 +4,7 @@
     {
         public string Name { get; set; }
         public string Phone { get; set; }
-        public bool Gender { get; set; }
+        public string Gender { get; set; } // Changed from bool to string
         public string? Email { get; set; }
         public string? Address { get; set; }
         public DateOnly? DateOfBirth { get; set; }
