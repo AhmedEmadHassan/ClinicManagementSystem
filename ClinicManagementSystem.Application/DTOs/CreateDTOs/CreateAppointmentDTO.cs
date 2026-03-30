@@ -2,7 +2,6 @@
 {
     public class CreateAppointmentDTO
     {
-        public int Id { get; set; }
         public int PatientId { get; set; }
         public int DoctorId { get; set; }
         public int AppointmentStateId { get; set; }
