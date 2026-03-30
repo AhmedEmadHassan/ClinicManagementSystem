@@ -15,6 +15,7 @@ namespace ClinicManagementSystem.Application
         public static void AddDependencyInjection(IServiceCollection services)
         {
             services.AddScoped<IDoctorSpecializationService, DoctorSpecializationService>();
+            services.AddScoped<IAppointmentStateService, AppointmentStateService>();
         }
     }
 }
