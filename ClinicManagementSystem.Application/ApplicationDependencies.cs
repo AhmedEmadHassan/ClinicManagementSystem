@@ -19,6 +19,9 @@ namespace ClinicManagementSystem.Application
             services.AddScoped<IAppointmentStateService, AppointmentStateService>();
             services.AddScoped<IDoctorService, DoctorService>();
             services.AddScoped<IPatientService, PatientService>();
+            services.AddScoped<IAppointmentService, AppointmentService>();
+            services.AddScoped<ISessionService, SessionService>();
+            services.AddScoped<IBillingService, BillingService>();
         }
     }
 }
