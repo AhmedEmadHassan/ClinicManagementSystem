@@ -18,12 +18,7 @@ namespace ClinicManagementSystem.Application.Services.Implementation
 
         public async Task<List<ResponseBillingDTO>> GetAll()
         {
-            var billings = await _unitOfWork.Billings.GetAllAsync();
-            var patients = await _unitOfWork.Patients.GetAllAsync();
-
-            var patientMap = patients.ToDictionary(p => p.Id, p => p.Name);
-
-            return billings.Select(b => new ResponseBillingDTO
+            return await _unitOfWork.Billings.GetAllAsync(b => new ResponseBillingDTO
             {
                 Id = b.Id,
                 SessionId = b.SessionId,
@@ -31,8 +26,8 @@ namespace ClinicManagementSystem.Application.Services.Implementation
                 Description = b.Description,
                 Amount = b.Amount,
                 IsPaid = b.IsPaid,
-                PatientName = patientMap.TryGetValue(b.PatientId, out var patientName) ? patientName : string.Empty
-            }).ToList();
+                PatientName = b.Patient.Name
+            });
         }
 
         public async Task<ResponseBillingDTO> GetById(int id)

@@ -18,24 +18,19 @@ namespace ClinicManagementSystem.Application.Services.Implementation
 
         public async Task<List<ResponseDoctorDTO>> GetAll()
         {
-            var doctors = await _unitOfWork.Doctors.GetAllAsync();
-            var specializations = await _unitOfWork.DoctorSpecializations.GetAllAsync();
-
-            var specializationMap = specializations.ToDictionary(s => s.Id, s => s.Name);
-
-            return doctors.Select(d => new ResponseDoctorDTO
+            return await _unitOfWork.Doctors.GetAllAsync(d => new ResponseDoctorDTO
             {
                 Id = d.Id,
                 Name = d.Name,
                 Phone = d.Phone,
-                Gender = MapGender(d.Gender),
+                Gender = d.Gender ? "Male" : "Female",
                 Email = d.Email,
                 Address = d.Address,
                 DateOfBirth = d.DateOfBirth,
                 Summary = d.Summary,
                 DoctorSpecializationId = d.DoctorSpecializationId,
-                DoctorSpecializationName = specializationMap.TryGetValue(d.DoctorSpecializationId, out var name) ? name : string.Empty
-            }).ToList();
+                DoctorSpecializationName = d.DoctorSpecialization.Name
+            });
         }
 
         public async Task<ResponseDoctorDTO> GetById(int id)
@@ -52,7 +47,7 @@ namespace ClinicManagementSystem.Application.Services.Implementation
                 Id = doctor.Id,
                 Name = doctor.Name,
                 Phone = doctor.Phone,
-                Gender = MapGender(doctor.Gender),
+                Gender = doctor.Gender ? "Male" : "Female",
                 Email = doctor.Email,
                 Address = doctor.Address,
                 DateOfBirth = doctor.DateOfBirth,
@@ -155,7 +150,6 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             return true;
         }
 
-        #region Helpers
         private static bool ParseGender(string gender) =>
             gender.Trim().ToLower() switch
             {
@@ -165,6 +159,5 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             };
 
         private static string MapGender(bool gender) => gender ? "Male" : "Female";
-        #endregion
     }
 }

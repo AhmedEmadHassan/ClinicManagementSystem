@@ -19,6 +19,7 @@ namespace ClinicManagementSystem.Application.RepositoryInterfaces.Generic
         Task DeleteAsync(T entity);
         // New
         Task<List<T>> GetAllAsync();
+        Task<List<TResult>> GetAllAsync<TResult>(Expression<Func<T, TResult>> selector);
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
     }
 }

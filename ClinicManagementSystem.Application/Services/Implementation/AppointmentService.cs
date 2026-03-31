@@ -18,16 +18,7 @@ namespace ClinicManagementSystem.Application.Services.Implementation
 
         public async Task<List<ResponseAppointmentDTO>> GetAll()
         {
-            var appointments = await _unitOfWork.Appointments.GetAllAsync();
-            var patients = await _unitOfWork.Patients.GetAllAsync();
-            var doctors = await _unitOfWork.Doctors.GetAllAsync();
-            var states = await _unitOfWork.AppointmentStates.GetAllAsync();
-
-            var patientMap = patients.ToDictionary(p => p.Id, p => p.Name);
-            var doctorMap = doctors.ToDictionary(d => d.Id, d => d.Name);
-            var stateMap = states.ToDictionary(s => s.Id, s => s.Name);
-
-            return appointments.Select(a => new ResponseAppointmentDTO
+            return await _unitOfWork.Appointments.GetAllAsync(a => new ResponseAppointmentDTO
             {
                 Id = a.Id,
                 PatientId = a.PatientId,
@@ -37,10 +28,10 @@ namespace ClinicManagementSystem.Application.Services.Implementation
                 AppointmentTime = a.AppointmentTime,
                 Notes = a.Notes,
                 CreatedAt = a.CreatedAt,
-                PatientName = patientMap.TryGetValue(a.PatientId, out var patientName) ? patientName : string.Empty,
-                DoctorName = doctorMap.TryGetValue(a.DoctorId, out var doctorName) ? doctorName : string.Empty,
-                AppointmentStateName = stateMap.TryGetValue(a.AppointmentStateId, out var stateName) ? stateName : string.Empty
-            }).ToList();
+                PatientName = a.Patient.Name,
+                DoctorName = a.Doctor.Name,
+                AppointmentStateName = a.AppointmentState.Name
+            });
         }
 
         public async Task<ResponseAppointmentDTO> GetById(int id)

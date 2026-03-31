@@ -110,7 +110,10 @@ namespace ClinicManagementSystem.Infrastructure.Repositories.Bases
         {
             return await _dbContext.Set<T>().AsNoTracking().ToListAsync();
         }
-
+        public async Task<List<TResult>> GetAllAsync<TResult>(Expression<Func<T, TResult>> selector)
+        {
+            return await _dbContext.Set<T>().AsNoTracking().Select(selector).ToListAsync();
+        }
         public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
         {
             return await _dbContext.Set<T>().AnyAsync(predicate);

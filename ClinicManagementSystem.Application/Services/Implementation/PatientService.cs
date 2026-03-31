@@ -18,19 +18,17 @@ namespace ClinicManagementSystem.Application.Services.Implementation
 
         public async Task<List<ResponsePatientDTO>> GetAll()
         {
-            var patients = await _unitOfWork.Patients.GetAllAsync();
-
-            return patients.Select(p => new ResponsePatientDTO
+            return await _unitOfWork.Patients.GetAllAsync(p => new ResponsePatientDTO
             {
                 Id = p.Id,
                 Name = p.Name,
                 Phone = p.Phone,
-                Gender = MapGender(p.Gender),
+                Gender = p.Gender ? "Male" : "Female",
                 Email = p.Email,
                 Address = p.Address,
                 DateOfBirth = p.DateOfBirth,
                 Summary = p.Summary
-            }).ToList();
+            });
         }
 
         public async Task<ResponsePatientDTO> GetById(int id)
@@ -126,7 +124,6 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             return true;
         }
 
-        // --- Helpers ---
         private static bool ParseGender(string gender) =>
             gender.Trim().ToLower() switch
             {

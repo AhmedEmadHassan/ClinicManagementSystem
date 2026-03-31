@@ -18,14 +18,7 @@ namespace ClinicManagementSystem.Application.Services.Implementation
 
         public async Task<List<ResponseSessionDTO>> GetAll()
         {
-            var sessions = await _unitOfWork.Sessions.GetAllAsync();
-            var patients = await _unitOfWork.Patients.GetAllAsync();
-            var doctors = await _unitOfWork.Doctors.GetAllAsync();
-
-            var patientMap = patients.ToDictionary(p => p.Id, p => p.Name);
-            var doctorMap = doctors.ToDictionary(d => d.Id, d => d.Name);
-
-            return sessions.Select(s => new ResponseSessionDTO
+            return await _unitOfWork.Sessions.GetAllAsync(s => new ResponseSessionDTO
             {
                 Id = s.Id,
                 AppointmentId = s.AppointmentId,
@@ -33,9 +26,9 @@ namespace ClinicManagementSystem.Application.Services.Implementation
                 DoctorId = s.DoctorId,
                 ConsultationNotes = s.ConsultationNotes,
                 Prescriptions = s.Prescriptions,
-                PatientName = patientMap.TryGetValue(s.PatientId, out var patientName) ? patientName : string.Empty,
-                DoctorName = doctorMap.TryGetValue(s.DoctorId, out var doctorName) ? doctorName : string.Empty
-            }).ToList();
+                PatientName = s.Patient.Name,
+                DoctorName = s.Doctor.Name
+            });
         }
 
         public async Task<ResponseSessionDTO> GetById(int id)
