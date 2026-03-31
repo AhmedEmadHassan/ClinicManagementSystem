@@ -9,6 +9,10 @@ namespace ClinicManagementSystem.Application
         public static IServiceCollection AddApplication(
             this IServiceCollection services)
         {
+            services.AddAutoMapper(cfg =>
+            {
+                // Optional: add custom config here if needed
+            }, typeof(ApplicationDependencies).Assembly);
             AddDependencyInjection(services);
             return services;
         }

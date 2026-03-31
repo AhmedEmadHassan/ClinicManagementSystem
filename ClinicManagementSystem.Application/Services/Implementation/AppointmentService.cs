@@ -1,4 +1,5 @@
-﻿using ClinicManagementSystem.Application.DTOs.CreateDTOs;
+﻿using AutoMapper;
+using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
@@ -10,10 +11,12 @@ namespace ClinicManagementSystem.Application.Services.Implementation
     public class AppointmentService : IAppointmentService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public AppointmentService(IUnitOfWork unitOfWork)
+        public AppointmentService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<List<ResponseAppointmentDTO>> GetAll()
@@ -45,20 +48,11 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             var doctor = await _unitOfWork.Doctors.GetByIdAsync(appointment.DoctorId);
             var state = await _unitOfWork.AppointmentStates.GetByIdAsync(appointment.AppointmentStateId);
 
-            return new ResponseAppointmentDTO
-            {
-                Id = appointment.Id,
-                PatientId = appointment.PatientId,
-                DoctorId = appointment.DoctorId,
-                AppointmentStateId = appointment.AppointmentStateId,
-                AppointmentDate = appointment.AppointmentDate,
-                AppointmentTime = appointment.AppointmentTime,
-                Notes = appointment.Notes,
-                CreatedAt = appointment.CreatedAt,
-                PatientName = patient?.Name ?? string.Empty,
-                DoctorName = doctor?.Name ?? string.Empty,
-                AppointmentStateName = state?.Name ?? string.Empty
-            };
+            appointment.Patient = patient;
+            appointment.Doctor = doctor;
+            appointment.AppointmentState = state;
+
+            return _mapper.Map<ResponseAppointmentDTO>(appointment);
         }
 
         public async Task<ResponseAppointmentDTO> Create(CreateAppointmentDTO dto)
@@ -75,16 +69,7 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             if (!stateExists)
                 throw new NotFoundException(nameof(AppointmentState), dto.AppointmentStateId);
 
-            var entity = new Appointment
-            {
-                PatientId = dto.PatientId,
-                DoctorId = dto.DoctorId,
-                AppointmentStateId = dto.AppointmentStateId,
-                AppointmentDate = dto.AppointmentDate,
-                AppointmentTime = dto.AppointmentTime,
-                Notes = dto.Notes,
-                CreatedAt = DateTime.UtcNow
-            };
+            var entity = _mapper.Map<Appointment>(dto);
 
             await _unitOfWork.Appointments.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -93,20 +78,11 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             var doctor = await _unitOfWork.Doctors.GetByIdAsync(entity.DoctorId);
             var state = await _unitOfWork.AppointmentStates.GetByIdAsync(entity.AppointmentStateId);
 
-            return new ResponseAppointmentDTO
-            {
-                Id = entity.Id,
-                PatientId = entity.PatientId,
-                DoctorId = entity.DoctorId,
-                AppointmentStateId = entity.AppointmentStateId,
-                AppointmentDate = entity.AppointmentDate,
-                AppointmentTime = entity.AppointmentTime,
-                Notes = entity.Notes,
-                CreatedAt = entity.CreatedAt,
-                PatientName = patient?.Name ?? string.Empty,
-                DoctorName = doctor?.Name ?? string.Empty,
-                AppointmentStateName = state?.Name ?? string.Empty
-            };
+            entity.Patient = patient;
+            entity.Doctor = doctor;
+            entity.AppointmentState = state;
+
+            return _mapper.Map<ResponseAppointmentDTO>(entity);
         }
 
         public async Task<ResponseAppointmentDTO> Update(int id, CreateAppointmentDTO dto)
@@ -128,12 +104,7 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             if (!stateExists)
                 throw new NotFoundException(nameof(AppointmentState), dto.AppointmentStateId);
 
-            appointment.PatientId = dto.PatientId;
-            appointment.DoctorId = dto.DoctorId;
-            appointment.AppointmentStateId = dto.AppointmentStateId;
-            appointment.AppointmentDate = dto.AppointmentDate;
-            appointment.AppointmentTime = dto.AppointmentTime;
-            appointment.Notes = dto.Notes;
+            _mapper.Map(dto, appointment);
 
             await _unitOfWork.Appointments.UpdateAsync(appointment);
             await _unitOfWork.SaveChangesAsync();
@@ -142,20 +113,11 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             var doctor = await _unitOfWork.Doctors.GetByIdAsync(appointment.DoctorId);
             var state = await _unitOfWork.AppointmentStates.GetByIdAsync(appointment.AppointmentStateId);
 
-            return new ResponseAppointmentDTO
-            {
-                Id = appointment.Id,
-                PatientId = appointment.PatientId,
-                DoctorId = appointment.DoctorId,
-                AppointmentStateId = appointment.AppointmentStateId,
-                AppointmentDate = appointment.AppointmentDate,
-                AppointmentTime = appointment.AppointmentTime,
-                Notes = appointment.Notes,
-                CreatedAt = appointment.CreatedAt,
-                PatientName = patient?.Name ?? string.Empty,
-                DoctorName = doctor?.Name ?? string.Empty,
-                AppointmentStateName = state?.Name ?? string.Empty
-            };
+            appointment.Patient = patient;
+            appointment.Doctor = doctor;
+            appointment.AppointmentState = state;
+
+            return _mapper.Map<ResponseAppointmentDTO>(appointment);
         }
 
         public async Task<bool> Delete(int id)

@@ -1,4 +1,5 @@
-﻿using ClinicManagementSystem.Application.DTOs.CreateDTOs;
+﻿using AutoMapper;
+using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
@@ -10,10 +11,12 @@ namespace ClinicManagementSystem.Application.Services.Implementation
     public class DoctorService : IDoctorService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public DoctorService(IUnitOfWork unitOfWork)
+        public DoctorService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<List<ResponseDoctorDTO>> GetAll()
@@ -42,19 +45,7 @@ namespace ClinicManagementSystem.Application.Services.Implementation
 
             var specialization = await _unitOfWork.DoctorSpecializations.GetByIdAsync(doctor.DoctorSpecializationId);
 
-            return new ResponseDoctorDTO
-            {
-                Id = doctor.Id,
-                Name = doctor.Name,
-                Phone = doctor.Phone,
-                Gender = doctor.Gender ? "Male" : "Female",
-                Email = doctor.Email,
-                Address = doctor.Address,
-                DateOfBirth = doctor.DateOfBirth,
-                Summary = doctor.Summary,
-                DoctorSpecializationId = doctor.DoctorSpecializationId,
-                DoctorSpecializationName = specialization?.Name ?? string.Empty
-            };
+            return _mapper.Map<ResponseDoctorDTO>(doctor);
         }
 
         public async Task<ResponseDoctorDTO> Create(CreateDoctorDTO dto)
@@ -64,36 +55,15 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             if (!specializationExists)
                 throw new NotFoundException(nameof(DoctorSpecialization), dto.DoctorSpecializationId);
 
-            var entity = new Doctor
-            {
-                Name = dto.Name,
-                Phone = dto.Phone,
-                Gender = ParseGender(dto.Gender),
-                Email = dto.Email,
-                Address = dto.Address,
-                DateOfBirth = dto.DateOfBirth,
-                Summary = dto.Summary,
-                DoctorSpecializationId = dto.DoctorSpecializationId
-            };
+            var entity = _mapper.Map<Doctor>(dto);
 
             await _unitOfWork.Doctors.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
 
             var specialization = await _unitOfWork.DoctorSpecializations.GetByIdAsync(entity.DoctorSpecializationId);
+            entity.DoctorSpecialization = specialization;
 
-            return new ResponseDoctorDTO
-            {
-                Id = entity.Id,
-                Name = entity.Name,
-                Phone = entity.Phone,
-                Gender = MapGender(entity.Gender),
-                Email = entity.Email,
-                Address = entity.Address,
-                DateOfBirth = entity.DateOfBirth,
-                Summary = entity.Summary,
-                DoctorSpecializationId = entity.DoctorSpecializationId,
-                DoctorSpecializationName = specialization?.Name ?? string.Empty
-            };
+            return _mapper.Map<ResponseDoctorDTO>(entity);
         }
 
         public async Task<ResponseDoctorDTO> Update(int id, CreateDoctorDTO dto)
@@ -108,33 +78,15 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             if (!specializationExists)
                 throw new NotFoundException(nameof(DoctorSpecialization), dto.DoctorSpecializationId);
 
-            doctor.Name = dto.Name;
-            doctor.Phone = dto.Phone;
-            doctor.Gender = ParseGender(dto.Gender);
-            doctor.Email = dto.Email;
-            doctor.Address = dto.Address;
-            doctor.DateOfBirth = dto.DateOfBirth;
-            doctor.Summary = dto.Summary;
-            doctor.DoctorSpecializationId = dto.DoctorSpecializationId;
+            _mapper.Map(dto, doctor);
 
             await _unitOfWork.Doctors.UpdateAsync(doctor);
             await _unitOfWork.SaveChangesAsync();
 
             var specialization = await _unitOfWork.DoctorSpecializations.GetByIdAsync(doctor.DoctorSpecializationId);
+            doctor.DoctorSpecialization = specialization;
 
-            return new ResponseDoctorDTO
-            {
-                Id = doctor.Id,
-                Name = doctor.Name,
-                Phone = doctor.Phone,
-                Gender = MapGender(doctor.Gender),
-                Email = doctor.Email,
-                Address = doctor.Address,
-                DateOfBirth = doctor.DateOfBirth,
-                Summary = doctor.Summary,
-                DoctorSpecializationId = doctor.DoctorSpecializationId,
-                DoctorSpecializationName = specialization?.Name ?? string.Empty
-            };
+            return _mapper.Map<ResponseDoctorDTO>(doctor);
         }
 
         public async Task<bool> Delete(int id)
@@ -149,15 +101,5 @@ namespace ClinicManagementSystem.Application.Services.Implementation
 
             return true;
         }
-
-        private static bool ParseGender(string gender) =>
-            gender.Trim().ToLower() switch
-            {
-                "male" => true,
-                "female" => false,
-                _ => throw new BadRequestException($"Invalid gender value '{gender}'. Accepted values are 'Male' or 'Female'.")
-            };
-
-        private static string MapGender(bool gender) => gender ? "Male" : "Female";
     }
 }

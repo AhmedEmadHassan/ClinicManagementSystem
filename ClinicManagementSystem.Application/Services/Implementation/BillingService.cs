@@ -1,4 +1,5 @@
-﻿using ClinicManagementSystem.Application.DTOs.CreateDTOs;
+﻿using AutoMapper;
+using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
@@ -10,10 +11,12 @@ namespace ClinicManagementSystem.Application.Services.Implementation
     public class BillingService : IBillingService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public BillingService(IUnitOfWork unitOfWork)
+        public BillingService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<List<ResponseBillingDTO>> GetAll()
@@ -38,17 +41,9 @@ namespace ClinicManagementSystem.Application.Services.Implementation
                 throw new NotFoundException(nameof(Billing), id);
 
             var patient = await _unitOfWork.Patients.GetByIdAsync(billing.PatientId);
+            billing.Patient = patient;
 
-            return new ResponseBillingDTO
-            {
-                Id = billing.Id,
-                SessionId = billing.SessionId,
-                PatientId = billing.PatientId,
-                Description = billing.Description,
-                Amount = billing.Amount,
-                IsPaid = billing.IsPaid,
-                PatientName = patient?.Name ?? string.Empty
-            };
+            return _mapper.Map<ResponseBillingDTO>(billing);
         }
 
         public async Task<ResponseBillingDTO> Create(CreateBillingDTO dto)
@@ -61,30 +56,15 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             if (!patientExists)
                 throw new NotFoundException(nameof(Patient), dto.PatientId);
 
-            var entity = new Billing
-            {
-                SessionId = dto.SessionId,
-                PatientId = dto.PatientId,
-                Description = dto.Description,
-                Amount = dto.Amount,
-                IsPaid = dto.IsPaid
-            };
+            var entity = _mapper.Map<Billing>(dto);
 
             await _unitOfWork.Billings.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
 
             var patient = await _unitOfWork.Patients.GetByIdAsync(entity.PatientId);
+            entity.Patient = patient;
 
-            return new ResponseBillingDTO
-            {
-                Id = entity.Id,
-                SessionId = entity.SessionId,
-                PatientId = entity.PatientId,
-                Description = entity.Description,
-                Amount = entity.Amount,
-                IsPaid = entity.IsPaid,
-                PatientName = patient?.Name ?? string.Empty
-            };
+            return _mapper.Map<ResponseBillingDTO>(entity);
         }
 
         public async Task<ResponseBillingDTO> Update(int id, CreateBillingDTO dto)
@@ -102,27 +82,15 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             if (!patientExists)
                 throw new NotFoundException(nameof(Patient), dto.PatientId);
 
-            billing.SessionId = dto.SessionId;
-            billing.PatientId = dto.PatientId;
-            billing.Description = dto.Description;
-            billing.Amount = dto.Amount;
-            billing.IsPaid = dto.IsPaid;
+            _mapper.Map(dto, billing);
 
             await _unitOfWork.Billings.UpdateAsync(billing);
             await _unitOfWork.SaveChangesAsync();
 
             var patient = await _unitOfWork.Patients.GetByIdAsync(billing.PatientId);
+            billing.Patient = patient;
 
-            return new ResponseBillingDTO
-            {
-                Id = billing.Id,
-                SessionId = billing.SessionId,
-                PatientId = billing.PatientId,
-                Description = billing.Description,
-                Amount = billing.Amount,
-                IsPaid = billing.IsPaid,
-                PatientName = patient?.Name ?? string.Empty
-            };
+            return _mapper.Map<ResponseBillingDTO>(billing);
         }
 
         public async Task<bool> Delete(int id)

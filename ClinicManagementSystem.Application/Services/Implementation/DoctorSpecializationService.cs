@@ -1,4 +1,5 @@
-﻿using ClinicManagementSystem.Application.DTOs.CreateDTOs;
+﻿using AutoMapper;
+using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
@@ -10,21 +11,18 @@ namespace ClinicManagementSystem.Application.Services.Implementation
     public class DoctorSpecializationService : IDoctorSpecializationService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public DoctorSpecializationService(IUnitOfWork unitOfWork)
+        public DoctorSpecializationService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<List<ResponseDoctorSpecializationDTO>> GetAll()
         {
             var specializations = await _unitOfWork.DoctorSpecializations.GetAllAsync();
-
-            return specializations.Select(s => new ResponseDoctorSpecializationDTO
-            {
-                Id = s.Id,
-                Name = s.Name
-            }).ToList();
+            return _mapper.Map<List<ResponseDoctorSpecializationDTO>>(specializations);
         }
 
         public async Task<ResponseDoctorSpecializationDTO> GetById(int id)
@@ -34,11 +32,7 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             if (specialization is null)
                 throw new NotFoundException(nameof(DoctorSpecialization), id);
 
-            return new ResponseDoctorSpecializationDTO
-            {
-                Id = specialization.Id,
-                Name = specialization.Name
-            };
+            return _mapper.Map<ResponseDoctorSpecializationDTO>(specialization);
         }
 
         public async Task<ResponseDoctorSpecializationDTO> Create(CreateDoctorSpecializationDTO dto)
@@ -48,19 +42,12 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             if (exists)
                 throw new DuplicateException($"DoctorSpecialization with name '{dto.Name}' already exists.");
 
-            var entity = new DoctorSpecialization
-            {
-                Name = dto.Name
-            };
+            var entity = _mapper.Map<DoctorSpecialization>(dto);
 
             await _unitOfWork.DoctorSpecializations.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
 
-            return new ResponseDoctorSpecializationDTO
-            {
-                Id = entity.Id,
-                Name = entity.Name
-            };
+            return _mapper.Map<ResponseDoctorSpecializationDTO>(entity);
         }
 
         public async Task<ResponseDoctorSpecializationDTO> Update(int id, CreateDoctorSpecializationDTO dto)
@@ -75,16 +62,12 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             if (duplicate)
                 throw new DuplicateException($"DoctorSpecialization with name '{dto.Name}' already exists.");
 
-            specialization.Name = dto.Name;
+            _mapper.Map(dto, specialization);
 
             await _unitOfWork.DoctorSpecializations.UpdateAsync(specialization);
             await _unitOfWork.SaveChangesAsync();
 
-            return new ResponseDoctorSpecializationDTO
-            {
-                Id = specialization.Id,
-                Name = specialization.Name
-            };
+            return _mapper.Map<ResponseDoctorSpecializationDTO>(specialization);
         }
 
         public async Task<bool> Delete(int id)

@@ -1,4 +1,5 @@
-﻿using ClinicManagementSystem.Application.DTOs.CreateDTOs;
+﻿using AutoMapper;
+using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
@@ -10,25 +11,18 @@ namespace ClinicManagementSystem.Application.Services.Implementation
     public class PatientService : IPatientService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public PatientService(IUnitOfWork unitOfWork)
+        public PatientService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<List<ResponsePatientDTO>> GetAll()
         {
-            return await _unitOfWork.Patients.GetAllAsync(p => new ResponsePatientDTO
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Phone = p.Phone,
-                Gender = p.Gender ? "Male" : "Female",
-                Email = p.Email,
-                Address = p.Address,
-                DateOfBirth = p.DateOfBirth,
-                Summary = p.Summary
-            });
+            var patients = await _unitOfWork.Patients.GetAllAsync();
+            return _mapper.Map<List<ResponsePatientDTO>>(patients);
         }
 
         public async Task<ResponsePatientDTO> GetById(int id)
@@ -38,46 +32,17 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             if (patient is null)
                 throw new NotFoundException(nameof(Patient), id);
 
-            return new ResponsePatientDTO
-            {
-                Id = patient.Id,
-                Name = patient.Name,
-                Phone = patient.Phone,
-                Gender = MapGender(patient.Gender),
-                Email = patient.Email,
-                Address = patient.Address,
-                DateOfBirth = patient.DateOfBirth,
-                Summary = patient.Summary
-            };
+            return _mapper.Map<ResponsePatientDTO>(patient);
         }
 
         public async Task<ResponsePatientDTO> Create(CreatePatientDTO dto)
         {
-            var entity = new Patient
-            {
-                Name = dto.Name,
-                Phone = dto.Phone,
-                Gender = ParseGender(dto.Gender),
-                Email = dto.Email,
-                Address = dto.Address,
-                DateOfBirth = dto.DateOfBirth,
-                Summary = dto.Summary
-            };
+            var entity = _mapper.Map<Patient>(dto);
 
             await _unitOfWork.Patients.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
 
-            return new ResponsePatientDTO
-            {
-                Id = entity.Id,
-                Name = entity.Name,
-                Phone = entity.Phone,
-                Gender = MapGender(entity.Gender),
-                Email = entity.Email,
-                Address = entity.Address,
-                DateOfBirth = entity.DateOfBirth,
-                Summary = entity.Summary
-            };
+            return _mapper.Map<ResponsePatientDTO>(entity);
         }
 
         public async Task<ResponsePatientDTO> Update(int id, CreatePatientDTO dto)
@@ -87,28 +52,12 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             if (patient is null)
                 throw new NotFoundException(nameof(Patient), id);
 
-            patient.Name = dto.Name;
-            patient.Phone = dto.Phone;
-            patient.Gender = ParseGender(dto.Gender);
-            patient.Email = dto.Email;
-            patient.Address = dto.Address;
-            patient.DateOfBirth = dto.DateOfBirth;
-            patient.Summary = dto.Summary;
+            _mapper.Map(dto, patient);
 
             await _unitOfWork.Patients.UpdateAsync(patient);
             await _unitOfWork.SaveChangesAsync();
 
-            return new ResponsePatientDTO
-            {
-                Id = patient.Id,
-                Name = patient.Name,
-                Phone = patient.Phone,
-                Gender = MapGender(patient.Gender),
-                Email = patient.Email,
-                Address = patient.Address,
-                DateOfBirth = patient.DateOfBirth,
-                Summary = patient.Summary
-            };
+            return _mapper.Map<ResponsePatientDTO>(patient);
         }
 
         public async Task<bool> Delete(int id)
@@ -123,15 +72,5 @@ namespace ClinicManagementSystem.Application.Services.Implementation
 
             return true;
         }
-
-        private static bool ParseGender(string gender) =>
-            gender.Trim().ToLower() switch
-            {
-                "male" => true,
-                "female" => false,
-                _ => throw new BadRequestException($"Invalid gender value '{gender}'. Accepted values are 'Male' or 'Female'.")
-            };
-
-        private static string MapGender(bool gender) => gender ? "Male" : "Female";
     }
 }

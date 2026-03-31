@@ -1,4 +1,5 @@
-﻿using ClinicManagementSystem.Application.DTOs.CreateDTOs;
+﻿using AutoMapper;
+using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
@@ -10,10 +11,12 @@ namespace ClinicManagementSystem.Application.Services.Implementation
     public class SessionService : ISessionService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public SessionService(IUnitOfWork unitOfWork)
+        public SessionService(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
         }
 
         public async Task<List<ResponseSessionDTO>> GetAll()
@@ -41,17 +44,10 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             var patient = await _unitOfWork.Patients.GetByIdAsync(session.PatientId);
             var doctor = await _unitOfWork.Doctors.GetByIdAsync(session.DoctorId);
 
-            return new ResponseSessionDTO
-            {
-                Id = session.Id,
-                AppointmentId = session.AppointmentId,
-                PatientId = session.PatientId,
-                DoctorId = session.DoctorId,
-                ConsultationNotes = session.ConsultationNotes,
-                Prescriptions = session.Prescriptions,
-                PatientName = patient?.Name ?? string.Empty,
-                DoctorName = doctor?.Name ?? string.Empty
-            };
+            session.Patient = patient;
+            session.Doctor = doctor;
+
+            return _mapper.Map<ResponseSessionDTO>(session);
         }
 
         public async Task<ResponseSessionDTO> Create(CreateSessionDTO dto)
@@ -68,14 +64,7 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             if (!doctorExists)
                 throw new NotFoundException(nameof(Doctor), dto.DoctorId);
 
-            var entity = new Session
-            {
-                AppointmentId = dto.AppointmentId,
-                PatientId = dto.PatientId,
-                DoctorId = dto.DoctorId,
-                ConsultationNotes = dto.ConsultationNotes,
-                Prescriptions = dto.Prescriptions
-            };
+            var entity = _mapper.Map<Session>(dto);
 
             await _unitOfWork.Sessions.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -83,17 +72,10 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             var patient = await _unitOfWork.Patients.GetByIdAsync(entity.PatientId);
             var doctor = await _unitOfWork.Doctors.GetByIdAsync(entity.DoctorId);
 
-            return new ResponseSessionDTO
-            {
-                Id = entity.Id,
-                AppointmentId = entity.AppointmentId,
-                PatientId = entity.PatientId,
-                DoctorId = entity.DoctorId,
-                ConsultationNotes = entity.ConsultationNotes,
-                Prescriptions = entity.Prescriptions,
-                PatientName = patient?.Name ?? string.Empty,
-                DoctorName = doctor?.Name ?? string.Empty
-            };
+            entity.Patient = patient;
+            entity.Doctor = doctor;
+
+            return _mapper.Map<ResponseSessionDTO>(entity);
         }
 
         public async Task<ResponseSessionDTO> Update(int id, CreateSessionDTO dto)
@@ -115,11 +97,7 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             if (!doctorExists)
                 throw new NotFoundException(nameof(Doctor), dto.DoctorId);
 
-            session.AppointmentId = dto.AppointmentId;
-            session.PatientId = dto.PatientId;
-            session.DoctorId = dto.DoctorId;
-            session.ConsultationNotes = dto.ConsultationNotes;
-            session.Prescriptions = dto.Prescriptions;
+            _mapper.Map(dto, session);
 
             await _unitOfWork.Sessions.UpdateAsync(session);
             await _unitOfWork.SaveChangesAsync();
@@ -127,17 +105,10 @@ namespace ClinicManagementSystem.Application.Services.Implementation
             var patient = await _unitOfWork.Patients.GetByIdAsync(session.PatientId);
             var doctor = await _unitOfWork.Doctors.GetByIdAsync(session.DoctorId);
 
-            return new ResponseSessionDTO
-            {
-                Id = session.Id,
-                AppointmentId = session.AppointmentId,
-                PatientId = session.PatientId,
-                DoctorId = session.DoctorId,
-                ConsultationNotes = session.ConsultationNotes,
-                Prescriptions = session.Prescriptions,
-                PatientName = patient?.Name ?? string.Empty,
-                DoctorName = doctor?.Name ?? string.Empty
-            };
+            session.Patient = patient;
+            session.Doctor = doctor;
+
+            return _mapper.Map<ResponseSessionDTO>(session);
         }
 
         public async Task<bool> Delete(int id)
