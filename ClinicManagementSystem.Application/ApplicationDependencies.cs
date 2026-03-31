@@ -1,5 +1,7 @@
 ﻿using ClinicManagementSystem.Application.Services.Abstraction;
+using ClinicManagementSystem.Application.Services.Abstraction.Auth;
 using ClinicManagementSystem.Application.Services.Implementation;
+using ClinicManagementSystem.Application.Services.Implementation.Auth;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -50,6 +52,7 @@ namespace ClinicManagementSystem.Application
             services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<ISessionService, SessionService>();
             services.AddScoped<IBillingService, BillingService>();
+            services.AddScoped<IAuthService, AuthService>();
         }
     }
 }

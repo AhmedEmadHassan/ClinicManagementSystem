@@ -23,6 +23,7 @@ namespace ClinicManagementSystem.Infrastructure
                 ));
 
             AddIdentityDependencies(services, configuration);
+            ConfigureSwaggerAuthentication(services, configuration);
             AddDependencyInjection(services, configuration);
             return services;
         }
@@ -52,6 +53,11 @@ namespace ClinicManagementSystem.Infrastructure
             })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
+        }
+        private static void ConfigureSwaggerAuthentication(IServiceCollection services, IConfiguration configuration)
+        {
+            // Add Swagger Gen Authorization
+
         }
     }
 }
