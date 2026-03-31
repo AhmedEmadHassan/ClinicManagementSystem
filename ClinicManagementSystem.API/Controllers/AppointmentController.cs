@@ -1,11 +1,13 @@
 ﻿using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.Services.Abstraction;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicManagementSystem.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin,Receptionist,Doctor,Patient")]
     public class AppointmentController : ControllerBase
     {
         private readonly IAppointmentService _service;
@@ -30,6 +32,7 @@ namespace ClinicManagementSystem.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Create([FromBody] CreateAppointmentDTO dto)
         {
             var result = await _service.Create(dto);
@@ -37,6 +40,7 @@ namespace ClinicManagementSystem.API.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Update(int id, [FromBody] CreateAppointmentDTO dto)
         {
             var result = await _service.Update(id, dto);
@@ -44,6 +48,7 @@ namespace ClinicManagementSystem.API.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             await _service.Delete(id);
