@@ -1,18 +1,42 @@
 ﻿using ClinicManagementSystem.Application.Services.Abstraction;
 using ClinicManagementSystem.Application.Services.Implementation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace ClinicManagementSystem.Application
 {
     public static class ApplicationDependencies
     {
         public static IServiceCollection AddApplication(
-            this IServiceCollection services)
+            this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddAutoMapper(cfg =>
+            // Added: JWT Settings
+            services.Configure<JwtSettings>(configuration.GetSection("JwtSettings"));
+
+            // Added: JWT Authentication
+            var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>();
+            services.AddAuthentication(options =>
             {
-                // Optional: add custom config here if needed
-            }, typeof(ApplicationDependencies).Assembly);
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSettings!.Issuer,
+                    ValidAudience = jwtSettings.Audience,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+                };
+            });
+            services.AddAutoMapper(cfg => { }, typeof(ApplicationDependencies).Assembly);
             AddDependencyInjection(services);
             return services;
         }

@@ -1,6 +1,7 @@
 using ClinicManagementSystem.API.Middlewares;
 using ClinicManagementSystem.Application;
 using ClinicManagementSystem.Infrastructure;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,8 +13,20 @@ builder.Services.AddEndpointsApiExplorer(); // Added: required for Swagger to di
 builder.Services.AddSwaggerGen();           // Added: registers Swagger generator
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddApplication();
+builder.Services.AddApplication(builder.Configuration);
 var app = builder.Build();
+
+#region Add Roles Seed
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    foreach (var role in new[] { "Admin", "Doctor", "Patient", "Receptionist" })
+    {
+        if (!await roleManager.RoleExistsAsync(role))
+            await roleManager.CreateAsync(new IdentityRole(role));
+    }
+}
+#endregion
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -27,6 +40,7 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 #endregion
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
