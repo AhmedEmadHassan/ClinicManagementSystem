@@ -1,5 +1,4 @@
 ﻿using ClinicManagementSystem.Application.DTOs.CreateDTOs;
-using ClinicManagementSystem.Application.Exceptions;
 using ClinicManagementSystem.Application.Services.Abstraction;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,57 +25,29 @@ namespace ClinicManagementSystem.API.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            try
-            {
-                var result = await _service.GetById(id);
-                return Ok(result);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            var result = await _service.GetById(id);
+            return Ok(result);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateBillingDTO dto)
         {
-            try
-            {
-                var result = await _service.Create(dto);
-                return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            var result = await _service.Create(dto);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] CreateBillingDTO dto)
         {
-            try
-            {
-                var result = await _service.Update(id, dto);
-                return Ok(result);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            var result = await _service.Update(id, dto);
+            return Ok(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            try
-            {
-                await _service.Delete(id);
-                return NoContent();
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            await _service.Delete(id);
+            return NoContent();
         }
     }
 }

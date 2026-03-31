@@ -6,14 +6,15 @@ namespace ClinicManagementSystem.API.Middlewares
     {
         private readonly ILogger<GlobalExceptionMiddleware> _logger;
         private readonly RequestDelegate _next;
+
         public GlobalExceptionMiddleware(ILogger<GlobalExceptionMiddleware> logger, RequestDelegate next)
         {
             _logger = logger;
             _next = next;
         }
+
         public async Task InvokeAsync(HttpContext context)
         {
-
             try
             {
                 await _next(context);
@@ -22,45 +23,50 @@ namespace ClinicManagementSystem.API.Middlewares
             {
                 await HandleExceptionAsync(context, ex);
             }
-
-
         }
-        public async Task HandleExceptionAsync(HttpContext context, Exception exception)
+
+        private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             context.Response.ContentType = "application/json";
 
-            int StatusCode;
-            string Message;
+            int statusCode;
+            string message;
 
             switch (exception)
             {
-                case NotFoundException NotFoundEx:
-                    StatusCode = StatusCodes.Status404NotFound;
-                    Message = NotFoundEx.Message;
+                case NotFoundException ex:
+                    statusCode = StatusCodes.Status404NotFound;
+                    message = ex.Message;
+                    _logger.LogWarning(ex, "Not found: {Message}", ex.Message);
                     break;
-                case BadRequestException BadRequestEx:
-                    StatusCode = StatusCodes.Status400BadRequest;
-                    Message = BadRequestEx.Message;
+
+                case BadRequestException ex:
+                    statusCode = StatusCodes.Status400BadRequest;
+                    message = ex.Message;
+                    _logger.LogWarning(ex, "Bad request: {Message}", ex.Message);
                     break;
-                case DuplicateException DuplicateEx:
-                    StatusCode = StatusCodes.Status409Conflict;
-                    Message = DuplicateEx.Message;
+
+                case DuplicateException ex:
+                    statusCode = StatusCodes.Status409Conflict;
+                    message = ex.Message;
+                    _logger.LogWarning(ex, "Duplicate: {Message}", ex.Message);
                     break;
 
                 default:
-                    StatusCode = StatusCodes.Status500InternalServerError;
-                    Message = "Something Went Wrong!";
+                    statusCode = StatusCodes.Status500InternalServerError;
+                    message = "Something went wrong.";
+                    _logger.LogError(exception, "Unhandled exception at {Path}", context.Request.Path);
                     break;
             }
 
-            context.Response.StatusCode = StatusCode;
-            await context.Response.WriteAsJsonAsync(
-                new
-                {
-                    status = StatusCode,
-                    message = Message
-                }
-                );
+            context.Response.StatusCode = statusCode;
+
+            await context.Response.WriteAsJsonAsync(new
+            {
+                status = statusCode,
+                message = message,
+                path = context.Request.Path.Value
+            });
         }
     }
 }
