@@ -1,7 +1,5 @@
 ﻿using ClinicManagementSystem.Application.Common.Behaviors;
-using ClinicManagementSystem.Application.Services.Abstraction;
 using ClinicManagementSystem.Application.Services.Abstraction.Auth;
-using ClinicManagementSystem.Application.Services.Implementation;
 using ClinicManagementSystem.Application.Services.Implementation.Auth;
 using FluentValidation;
 using MediatR;
@@ -52,13 +50,6 @@ namespace ClinicManagementSystem.Application
 
         public static void AddDependencyInjection(IServiceCollection services)
         {
-            services.AddScoped<IDoctorSpecializationService, DoctorSpecializationService>();
-            services.AddScoped<IAppointmentStateService, AppointmentStateService>();
-            services.AddScoped<IDoctorService, DoctorService>();
-            services.AddScoped<IPatientService, PatientService>();
-            services.AddScoped<IAppointmentService, AppointmentService>();
-            services.AddScoped<ISessionService, SessionService>();
-            services.AddScoped<IBillingService, BillingService>();
             services.AddScoped<IAuthService, AuthService>();
         }
         public static void AddMediatRValidation(IServiceCollection services)
