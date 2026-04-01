@@ -7,8 +7,14 @@ using Microsoft.OpenApi;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddControllers();
+#region Add Controllers with Suppressed Model State Validation
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.SuppressModelStateInvalidFilter = true;
+    });
+//builder.Services.AddControllers();
+#endregion
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer(); // Added: required for Swagger to discover endpoints
 #region Add Swagger Gen

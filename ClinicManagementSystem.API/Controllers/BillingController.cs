@@ -1,56 +1,48 @@
 ﻿using ClinicManagementSystem.API.Controllers.Base;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
-using ClinicManagementSystem.Application.Services.Abstraction;
+using ClinicManagementSystem.Application.Features.Billings.Commands.Create;
+using ClinicManagementSystem.Application.Features.Billings.Commands.Delete;
+using ClinicManagementSystem.Application.Features.Billings.Commands.Update;
+using ClinicManagementSystem.Application.Features.Billings.Queries.GetAll;
+using ClinicManagementSystem.Application.Features.Billings.Queries.GetById;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicManagementSystem.API.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
     [Authorize(Roles = "Admin,Receptionist")]
     public class BillingController : BaseController
     {
-        private readonly IBillingService _service;
+        private readonly IMediator _mediator;
 
-        public BillingController(IBillingService service)
+        public BillingController(IMediator mediator)
         {
-            _service = service;
+            _mediator = mediator;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
-        {
-            var result = await _service.GetAll();
-            return Ok(result);
-        }
+            => Success(await _mediator.Send(new GetAllBillingsQuery()));
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
-        {
-            var result = await _service.GetById(id);
-            return Ok(result);
-        }
+            => Success(await _mediator.Send(new GetBillingByIdQuery(id)));
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateBillingDTO dto)
-        {
-            var result = await _service.Create(dto);
-            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-        }
+            => Created(await _mediator.Send(new CreateBillingCommand(dto)));
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] CreateBillingDTO dto)
-        {
-            var result = await _service.Update(id, dto);
-            return Ok(result);
-        }
+            => Success(await _mediator.Send(new UpdateBillingCommand(id, dto)));
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _service.Delete(id);
+            await _mediator.Send(new DeleteBillingCommand(id));
             return NoContent();
         }
     }

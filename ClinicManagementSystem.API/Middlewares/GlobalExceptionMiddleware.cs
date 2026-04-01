@@ -53,9 +53,15 @@ namespace ClinicManagementSystem.API.Middlewares
                     _logger.LogWarning(ex, "Duplicate: {Message}", ex.Message);
                     break;
 
+                case CustomValidationException ex:
+                    statusCode = StatusCodes.Status400BadRequest;
+                    message = string.Join(", ", ex.Errors);
+                    _logger.LogWarning(ex, "Validation failed: {Errors}", message);
+                    break;
+
                 default:
                     statusCode = StatusCodes.Status500InternalServerError;
-                    message = "Something went wrong.";
+                    message = exception.Message;
                     _logger.LogError(exception, "Unhandled exception at {Path}", context.Request.Path);
                     break;
             }

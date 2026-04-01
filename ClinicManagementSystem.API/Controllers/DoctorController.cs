@@ -1,55 +1,47 @@
 ﻿using ClinicManagementSystem.API.Controllers.Base;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
-using ClinicManagementSystem.Application.Services.Abstraction;
+using ClinicManagementSystem.Application.Features.Doctors.Commands.Create;
+using ClinicManagementSystem.Application.Features.Doctors.Commands.Delete;
+using ClinicManagementSystem.Application.Features.Doctors.Commands.Update;
+using ClinicManagementSystem.Application.Features.Doctors.Queries.GetAll;
+using ClinicManagementSystem.Application.Features.Doctors.Queries.GetById;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicManagementSystem.API.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
     [Authorize(Roles = "Admin")]
     public class DoctorController : BaseController
     {
-        private readonly IDoctorService _service;
+        private readonly IMediator _mediator;
 
-        public DoctorController(IDoctorService service)
+        public DoctorController(IMediator mediator)
         {
-            _service = service;
+            _mediator = mediator;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
-        {
-            var result = await _service.GetAll();
-            return Ok(result);
-        }
+            => Success(await _mediator.Send(new GetAllDoctorsQuery()));
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
-        {
-            var result = await _service.GetById(id);
-            return Ok(result);
-        }
+            => Success(await _mediator.Send(new GetDoctorByIdQuery(id)));
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateDoctorDTO dto)
-        {
-            var result = await _service.Create(dto);
-            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-        }
+            => Created(await _mediator.Send(new CreateDoctorCommand(dto)));
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] CreateDoctorDTO dto)
-        {
-            var result = await _service.Update(id, dto);
-            return Ok(result);
-        }
+            => Success(await _mediator.Send(new UpdateDoctorCommand(id, dto)));
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _service.Delete(id);
+            await _mediator.Send(new DeleteDoctorCommand(id));
             return NoContent();
         }
     }

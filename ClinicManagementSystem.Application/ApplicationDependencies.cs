@@ -1,7 +1,10 @@
-﻿using ClinicManagementSystem.Application.Services.Abstraction;
+﻿using ClinicManagementSystem.Application.Common.Behaviors;
+using ClinicManagementSystem.Application.Services.Abstraction;
 using ClinicManagementSystem.Application.Services.Abstraction.Auth;
 using ClinicManagementSystem.Application.Services.Implementation;
 using ClinicManagementSystem.Application.Services.Implementation.Auth;
+using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +42,10 @@ namespace ClinicManagementSystem.Application
                 };
             });
             services.AddAutoMapper(cfg => { }, typeof(ApplicationDependencies).Assembly);
+
+
+            AddMediatRValidation(services);
+
             AddDependencyInjection(services);
             return services;
         }
@@ -53,6 +60,18 @@ namespace ClinicManagementSystem.Application
             services.AddScoped<ISessionService, SessionService>();
             services.AddScoped<IBillingService, BillingService>();
             services.AddScoped<IAuthService, AuthService>();
+        }
+        public static void AddMediatRValidation(IServiceCollection services)
+        {
+            // MediatR
+            services.AddMediatR(cfg =>
+                cfg.RegisterServicesFromAssembly(typeof(ApplicationDependencies).Assembly));
+
+            // FluentValidation Pipeline Behavior
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+
+            // FluentValidation Validators
+            services.AddValidatorsFromAssembly(typeof(ApplicationDependencies).Assembly);
         }
     }
 }

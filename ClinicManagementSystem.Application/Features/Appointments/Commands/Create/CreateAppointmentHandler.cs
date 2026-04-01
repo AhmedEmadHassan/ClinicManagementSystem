@@ -1,0 +1,74 @@
+﻿using AutoMapper;
+using ClinicManagementSystem.Application.DTOs.CreateDTOs;
+using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
+using ClinicManagementSystem.Application.Exceptions;
+using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
+using ClinicManagementSystem.Domain.Entities;
+using FluentValidation;
+using MediatR;
+
+namespace ClinicManagementSystem.Application.Features.Appointments.Commands.Create
+{
+    // Commands/Create
+    public record CreateAppointmentCommand(CreateAppointmentDTO Dto) : IRequest<ResponseAppointmentDTO>;
+
+    public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand, ResponseAppointmentDTO>
+    {
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
+
+        public CreateAppointmentHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
+
+        public async Task<ResponseAppointmentDTO> Handle(CreateAppointmentCommand request, CancellationToken cancellationToken)
+        {
+            var patientExists = await _unitOfWork.Patients.AnyAsync(p => p.Id == request.Dto.PatientId);
+            if (!patientExists)
+                throw new NotFoundException(nameof(Patient), request.Dto.PatientId);
+
+            var doctorExists = await _unitOfWork.Doctors.AnyAsync(d => d.Id == request.Dto.DoctorId);
+            if (!doctorExists)
+                throw new NotFoundException(nameof(Doctor), request.Dto.DoctorId);
+
+            var stateExists = await _unitOfWork.AppointmentStates.AnyAsync(s => s.Id == request.Dto.AppointmentStateId);
+            if (!stateExists)
+                throw new NotFoundException(nameof(AppointmentState), request.Dto.AppointmentStateId);
+
+            var entity = _mapper.Map<Appointment>(request.Dto);
+
+            await _unitOfWork.Appointments.AddAsync(entity);
+            await _unitOfWork.SaveChangesAsync();
+
+            var patient = await _unitOfWork.Patients.GetByIdAsync(entity.PatientId);
+            var doctor = await _unitOfWork.Doctors.GetByIdAsync(entity.DoctorId);
+            var state = await _unitOfWork.AppointmentStates.GetByIdAsync(entity.AppointmentStateId);
+
+            entity.Patient = patient;
+            entity.Doctor = doctor;
+            entity.AppointmentState = state;
+
+            return _mapper.Map<ResponseAppointmentDTO>(entity);
+        }
+    }
+
+    public class CreateAppointmentValidator : AbstractValidator<CreateAppointmentCommand>
+    {
+        public CreateAppointmentValidator()
+        {
+            RuleFor(x => x.Dto.PatientId)
+                .GreaterThan(0).WithMessage("PatientId must be a valid id.");
+
+            RuleFor(x => x.Dto.DoctorId)
+                .GreaterThan(0).WithMessage("DoctorId must be a valid id.");
+
+            RuleFor(x => x.Dto.AppointmentStateId)
+                .GreaterThan(0).WithMessage("AppointmentStateId must be a valid id.");
+
+            RuleFor(x => x.Dto.AppointmentDate)
+                .NotEmpty().WithMessage("AppointmentDate is required.");
+        }
+    }
+}

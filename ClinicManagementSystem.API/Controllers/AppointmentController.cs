@@ -1,58 +1,50 @@
 ﻿using ClinicManagementSystem.API.Controllers.Base;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
-using ClinicManagementSystem.Application.Services.Abstraction;
+using ClinicManagementSystem.Application.Features.Appointments.Commands.Create;
+using ClinicManagementSystem.Application.Features.Appointments.Commands.Delete;
+using ClinicManagementSystem.Application.Features.Appointments.Commands.Update;
+using ClinicManagementSystem.Application.Features.Appointments.Queries.GetAll;
+using ClinicManagementSystem.Application.Features.Appointments.Queries.GetById;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicManagementSystem.API.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
     [Authorize(Roles = "Admin,Receptionist,Doctor,Patient")]
     public class AppointmentController : BaseController
     {
-        private readonly IAppointmentService _service;
+        private readonly IMediator _mediator;
 
-        public AppointmentController(IAppointmentService service)
+        public AppointmentController(IMediator mediator)
         {
-            _service = service;
+            _mediator = mediator;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
-        {
-            var result = await _service.GetAll();
-            return Ok(result);
-        }
+            => Success(await _mediator.Send(new GetAllAppointmentsQuery()));
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
-        {
-            var result = await _service.GetById(id);
-            return Ok(result);
-        }
+            => Success(await _mediator.Send(new GetAppointmentByIdQuery(id)));
 
         [HttpPost]
         [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Create([FromBody] CreateAppointmentDTO dto)
-        {
-            var result = await _service.Create(dto);
-            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
-        }
+            => Created(await _mediator.Send(new CreateAppointmentCommand(dto)));
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Receptionist")]
         public async Task<IActionResult> Update(int id, [FromBody] CreateAppointmentDTO dto)
-        {
-            var result = await _service.Update(id, dto);
-            return Ok(result);
-        }
+            => Success(await _mediator.Send(new UpdateAppointmentCommand(id, dto)));
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _service.Delete(id);
+            await _mediator.Send(new DeleteAppointmentCommand(id));
             return NoContent();
         }
     }
