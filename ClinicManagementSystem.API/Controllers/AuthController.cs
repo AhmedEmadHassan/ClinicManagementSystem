@@ -3,11 +3,13 @@ using ClinicManagementSystem.Application.DTOs.AuthDTOs;
 using ClinicManagementSystem.Application.Services.Abstraction.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace ClinicManagementSystem.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [EnableRateLimiting("AuthSlidingWindow")]
     public class AuthController : BaseController
     {
         private readonly IAuthService _authService;

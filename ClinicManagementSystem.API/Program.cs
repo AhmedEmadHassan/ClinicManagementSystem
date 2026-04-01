@@ -1,3 +1,4 @@
+using ClinicManagementSystem.API;
 using ClinicManagementSystem.API.Middlewares;
 using ClinicManagementSystem.Application;
 using ClinicManagementSystem.Infrastructure;
@@ -42,6 +43,8 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication(builder.Configuration);
+// Add Rate Limiting registration
+builder.Services.AddRateLimiting(builder.Configuration);
 var app = builder.Build();
 
 #region Add Roles Seed
@@ -67,7 +70,8 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<GlobalExceptionMiddleware>();
 #endregion
 app.UseHttpsRedirection();
-
+// Add middleware — must be before UseAuthentication
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
