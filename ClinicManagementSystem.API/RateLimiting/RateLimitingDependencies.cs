@@ -3,7 +3,7 @@ using ClinicManagementSystem.Application;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
 
-namespace ClinicManagementSystem.API
+namespace ClinicManagementSystem.API.RateLimiting
 {
     public static class RateLimitingDependencies
     {

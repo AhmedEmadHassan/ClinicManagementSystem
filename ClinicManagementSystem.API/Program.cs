@@ -1,6 +1,6 @@
 using Asp.Versioning;
-using ClinicManagementSystem.API;
 using ClinicManagementSystem.API.Middlewares;
+using ClinicManagementSystem.API.RateLimiting;
 using ClinicManagementSystem.Application;
 using ClinicManagementSystem.Infrastructure;
 using Microsoft.AspNetCore.Identity;
