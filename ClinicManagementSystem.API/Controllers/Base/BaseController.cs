@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ClinicManagementSystem.API.Controllers.Base
 {
     [ApiController]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class BaseController : ControllerBase
     {
         protected IActionResult Success<T>(T data, int statusCode = 200, string message = "Request completed successfully.")

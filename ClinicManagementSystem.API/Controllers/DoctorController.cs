@@ -1,4 +1,5 @@
-﻿using ClinicManagementSystem.API.Controllers.Base;
+﻿using Asp.Versioning;
+using ClinicManagementSystem.API.Controllers.Base;
 using ClinicManagementSystem.Application.Common.Pagination;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.Features.Doctors.Commands.Create;
@@ -12,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ClinicManagementSystem.API.Controllers
 {
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
     [Authorize(Roles = "Admin")]
     public class DoctorController : BaseController
     {

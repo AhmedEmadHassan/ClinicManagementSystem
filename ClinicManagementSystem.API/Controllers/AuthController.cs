@@ -1,4 +1,5 @@
-﻿using ClinicManagementSystem.API.Controllers.Base;
+﻿using Asp.Versioning;
+using ClinicManagementSystem.API.Controllers.Base;
 using ClinicManagementSystem.Application.DTOs.AuthDTOs;
 using ClinicManagementSystem.Application.Services.Abstraction.Auth;
 using Microsoft.AspNetCore.Authorization;
@@ -7,8 +8,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace ClinicManagementSystem.API.Controllers
 {
-    [Route("api/[controller]")]
-    [ApiController]
+    [ApiVersion("1.0")]
     [EnableRateLimiting("AuthSlidingWindow")]
     public class AuthController : BaseController
     {
