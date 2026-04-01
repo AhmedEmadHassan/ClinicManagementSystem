@@ -1,4 +1,5 @@
-﻿using ClinicManagementSystem.Application.DTOs.CreateDTOs;
+﻿using ClinicManagementSystem.API.Controllers.Base;
+using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.Services.Abstraction;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,7 +9,7 @@ namespace ClinicManagementSystem.API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Roles = "Admin,Receptionist,Doctor,Patient")]
-    public class AppointmentController : ControllerBase
+    public class AppointmentController : BaseController
     {
         private readonly IAppointmentService _service;
 

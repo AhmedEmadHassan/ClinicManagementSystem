@@ -1,4 +1,5 @@
-﻿using ClinicManagementSystem.Application.Exceptions;
+﻿using ClinicManagementSystem.API.ResponseHandler;
+using ClinicManagementSystem.Application.Exceptions;
 
 namespace ClinicManagementSystem.API.Middlewares
 {
@@ -61,12 +62,9 @@ namespace ClinicManagementSystem.API.Middlewares
 
             context.Response.StatusCode = statusCode;
 
-            await context.Response.WriteAsJsonAsync(new
-            {
-                status = statusCode,
-                message = message,
-                path = context.Request.Path.Value
-            });
+            await context.Response.WriteAsJsonAsync(
+                ApiResponse<object>.Failure(message, statusCode)
+            );
         }
     }
 }
