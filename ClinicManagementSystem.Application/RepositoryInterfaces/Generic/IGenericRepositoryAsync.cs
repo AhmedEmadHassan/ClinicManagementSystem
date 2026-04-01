@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using ClinicManagementSystem.Application.Common.Pagination;
+using System.Linq.Expressions;
 
 namespace ClinicManagementSystem.Application.RepositoryInterfaces.Generic
 {
@@ -20,6 +21,10 @@ namespace ClinicManagementSystem.Application.RepositoryInterfaces.Generic
         // New
         Task<List<T>> GetAllAsync();
         Task<List<TResult>> GetAllAsync<TResult>(Expression<Func<T, TResult>> selector);
+        Task<PaginatedResponse<TResult>> GetPagedAsync<TResult>(
+            int pageNumber,
+            int pageSize,
+            Expression<Func<T, TResult>> selector);
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
     }
 }

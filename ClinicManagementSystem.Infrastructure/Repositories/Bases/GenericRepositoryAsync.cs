@@ -1,4 +1,5 @@
-﻿using ClinicManagementSystem.Application.RepositoryInterfaces.Generic;
+﻿using ClinicManagementSystem.Application.Common.Pagination;
+using ClinicManagementSystem.Application.RepositoryInterfaces.Generic;
 using ClinicManagementSystem.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
@@ -113,6 +114,29 @@ namespace ClinicManagementSystem.Infrastructure.Repositories.Bases
         public async Task<List<TResult>> GetAllAsync<TResult>(Expression<Func<T, TResult>> selector)
         {
             return await _dbContext.Set<T>().AsNoTracking().Select(selector).ToListAsync();
+        }
+        public async Task<PaginatedResponse<TResult>> GetPagedAsync<TResult>(
+                                                                        int pageNumber,
+                                                                        int pageSize,
+                                                                        Expression<Func<T, TResult>> selector)
+        {
+            var query = _dbContext.Set<T>().AsNoTracking();
+
+            var totalCount = await query.CountAsync();
+
+            var data = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(selector)
+                .ToListAsync();
+
+            return new PaginatedResponse<TResult>
+            {
+                Data = data,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
         }
         public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
         {

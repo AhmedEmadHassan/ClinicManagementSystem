@@ -1,14 +1,16 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Pagination;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
 using MediatR;
 
 namespace ClinicManagementSystem.Application.Features.DoctorSpecializations.Queries.GetAll
 {
-    // Queries/GetAll
-    public record GetAllDoctorSpecializationsQuery : IRequest<List<ResponseDoctorSpecializationDTO>>;
+    public record GetAllDoctorSpecializationsQuery(PaginationRequest Pagination)
+    : IRequest<PaginatedResponse<ResponseDoctorSpecializationDTO>>;
 
-    public class GetAllDoctorSpecializationsHandler : IRequestHandler<GetAllDoctorSpecializationsQuery, List<ResponseDoctorSpecializationDTO>>
+    public class GetAllDoctorSpecializationsHandler
+        : IRequestHandler<GetAllDoctorSpecializationsQuery, PaginatedResponse<ResponseDoctorSpecializationDTO>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -19,10 +21,19 @@ namespace ClinicManagementSystem.Application.Features.DoctorSpecializations.Quer
             _mapper = mapper;
         }
 
-        public async Task<List<ResponseDoctorSpecializationDTO>> Handle(GetAllDoctorSpecializationsQuery request, CancellationToken cancellationToken)
+        public async Task<PaginatedResponse<ResponseDoctorSpecializationDTO>> Handle(
+            GetAllDoctorSpecializationsQuery request, CancellationToken cancellationToken)
         {
-            var specializations = await _unitOfWork.DoctorSpecializations.GetAllAsync();
-            return _mapper.Map<List<ResponseDoctorSpecializationDTO>>(specializations);
+            var paged = await _unitOfWork.DoctorSpecializations.GetPagedAsync(
+                request.Pagination.PageNumber,
+                request.Pagination.PageSize,
+                s => new ResponseDoctorSpecializationDTO
+                {
+                    Id = s.Id,
+                    Name = s.Name
+                });
+
+            return paged;
         }
     }
 }

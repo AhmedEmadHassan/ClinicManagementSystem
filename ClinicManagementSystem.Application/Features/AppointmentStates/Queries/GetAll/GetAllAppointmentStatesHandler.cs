@@ -1,14 +1,16 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Pagination;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
 using MediatR;
 
 namespace ClinicManagementSystem.Application.Features.AppointmentStates.Queries.GetAll
 {
-    // Queries/GetAll
-    public record GetAllAppointmentStatesQuery : IRequest<List<ResponseAppointmentStateDTO>>;
+    public record GetAllAppointmentStatesQuery(PaginationRequest Pagination)
+    : IRequest<PaginatedResponse<ResponseAppointmentStateDTO>>;
 
-    public class GetAllAppointmentStatesHandler : IRequestHandler<GetAllAppointmentStatesQuery, List<ResponseAppointmentStateDTO>>
+    public class GetAllAppointmentStatesHandler
+        : IRequestHandler<GetAllAppointmentStatesQuery, PaginatedResponse<ResponseAppointmentStateDTO>>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -19,10 +21,19 @@ namespace ClinicManagementSystem.Application.Features.AppointmentStates.Queries.
             _mapper = mapper;
         }
 
-        public async Task<List<ResponseAppointmentStateDTO>> Handle(GetAllAppointmentStatesQuery request, CancellationToken cancellationToken)
+        public async Task<PaginatedResponse<ResponseAppointmentStateDTO>> Handle(
+            GetAllAppointmentStatesQuery request, CancellationToken cancellationToken)
         {
-            var states = await _unitOfWork.AppointmentStates.GetAllAsync();
-            return _mapper.Map<List<ResponseAppointmentStateDTO>>(states);
+            var paged = await _unitOfWork.AppointmentStates.GetPagedAsync(
+                request.Pagination.PageNumber,
+                request.Pagination.PageSize,
+                s => new ResponseAppointmentStateDTO
+                {
+                    Id = s.Id,
+                    Name = s.Name
+                });
+
+            return paged;
         }
     }
 }

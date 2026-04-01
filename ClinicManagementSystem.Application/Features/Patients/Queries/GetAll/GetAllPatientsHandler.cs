@@ -1,28 +1,40 @@
-﻿using AutoMapper;
+﻿using ClinicManagementSystem.Application.Common.Pagination;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
 using MediatR;
 
 namespace ClinicManagementSystem.Application.Features.Patients.Queries.GetAll
 {
-    // Queries/GetAll
-    public record GetAllPatientsQuery : IRequest<List<ResponsePatientDTO>>;
+    public record GetAllPatientsQuery(PaginationRequest Pagination)
+    : IRequest<PaginatedResponse<ResponsePatientDTO>>;
 
-    public class GetAllPatientsHandler : IRequestHandler<GetAllPatientsQuery, List<ResponsePatientDTO>>
+    public class GetAllPatientsHandler
+        : IRequestHandler<GetAllPatientsQuery, PaginatedResponse<ResponsePatientDTO>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public GetAllPatientsHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public GetAllPatientsHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
         }
 
-        public async Task<List<ResponsePatientDTO>> Handle(GetAllPatientsQuery request, CancellationToken cancellationToken)
+        public async Task<PaginatedResponse<ResponsePatientDTO>> Handle(
+            GetAllPatientsQuery request, CancellationToken cancellationToken)
         {
-            var patients = await _unitOfWork.Patients.GetAllAsync();
-            return _mapper.Map<List<ResponsePatientDTO>>(patients);
+            return await _unitOfWork.Patients.GetPagedAsync(
+                request.Pagination.PageNumber,
+                request.Pagination.PageSize,
+                p => new ResponsePatientDTO
+                {
+                    Id = p.Id,
+                    Name = p.Name,
+                    Phone = p.Phone,
+                    Gender = p.Gender ? "Male" : "Female",
+                    Email = p.Email,
+                    Address = p.Address,
+                    DateOfBirth = p.DateOfBirth,
+                    Summary = p.Summary
+                });
         }
     }
 }

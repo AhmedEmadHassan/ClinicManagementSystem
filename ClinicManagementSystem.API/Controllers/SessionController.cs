@@ -1,4 +1,5 @@
 ﻿using ClinicManagementSystem.API.Controllers.Base;
+using ClinicManagementSystem.Application.Common.Pagination;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.Features.Sessions.Commands.Create;
 using ClinicManagementSystem.Application.Features.Sessions.Commands.Delete;
@@ -23,8 +24,8 @@ namespace ClinicManagementSystem.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
-            => Success(await _mediator.Send(new GetAllSessionsQuery()));
+        public async Task<IActionResult> GetAll([FromQuery] PaginationRequest pagination)
+            => Success(await _mediator.Send(new GetAllSessionsQuery(pagination)));
 
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)

@@ -1,13 +1,15 @@
-﻿using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
+﻿using ClinicManagementSystem.Application.Common.Pagination;
+using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
 using MediatR;
 
 namespace ClinicManagementSystem.Application.Features.Billings.Queries.GetAll
 {
-    // Queries/GetAll
-    public record GetAllBillingsQuery : IRequest<List<ResponseBillingDTO>>;
+    public record GetAllBillingsQuery(PaginationRequest Pagination)
+    : IRequest<PaginatedResponse<ResponseBillingDTO>>;
 
-    public class GetAllBillingsHandler : IRequestHandler<GetAllBillingsQuery, List<ResponseBillingDTO>>
+    public class GetAllBillingsHandler
+        : IRequestHandler<GetAllBillingsQuery, PaginatedResponse<ResponseBillingDTO>>
     {
         private readonly IUnitOfWork _unitOfWork;
 
@@ -16,18 +18,22 @@ namespace ClinicManagementSystem.Application.Features.Billings.Queries.GetAll
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<List<ResponseBillingDTO>> Handle(GetAllBillingsQuery request, CancellationToken cancellationToken)
+        public async Task<PaginatedResponse<ResponseBillingDTO>> Handle(
+            GetAllBillingsQuery request, CancellationToken cancellationToken)
         {
-            return await _unitOfWork.Billings.GetAllAsync(b => new ResponseBillingDTO
-            {
-                Id = b.Id,
-                SessionId = b.SessionId,
-                PatientId = b.PatientId,
-                Description = b.Description,
-                Amount = b.Amount,
-                IsPaid = b.IsPaid,
-                PatientName = b.Patient.Name
-            });
+            return await _unitOfWork.Billings.GetPagedAsync(
+                request.Pagination.PageNumber,
+                request.Pagination.PageSize,
+                b => new ResponseBillingDTO
+                {
+                    Id = b.Id,
+                    SessionId = b.SessionId,
+                    PatientId = b.PatientId,
+                    Description = b.Description,
+                    Amount = b.Amount,
+                    IsPaid = b.IsPaid,
+                    PatientName = b.Patient.Name
+                });
         }
     }
 }
