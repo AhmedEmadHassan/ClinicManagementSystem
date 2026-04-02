@@ -31,8 +31,8 @@ namespace ClinicManagementSystem.Application.Features.DoctorSpecializations.Comm
 
             var entity = _mapper.Map<DoctorSpecialization>(request.Dto);
 
-            await _unitOfWork.DoctorSpecializations.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.DoctorSpecializations.AddAsync(entity);
 
             return _mapper.Map<ResponseDoctorSpecializationDTO>(entity);
         }

@@ -1,6 +1,7 @@
 <Solution>
+  <Project Path="ClinicManagementSystem.API/ClinicManagementSystem.API.csproj" />
   <Project Path="ClinicManagementSystem.Application/ClinicManagementSystem.Application.csproj" />
   <Project Path="ClinicManagementSystem.Domain/ClinicManagementSystem.Domain.csproj" />
   <Project Path="ClinicManagementSystem.Infrastructure/ClinicManagementSystem.Infrastructure.csproj" />
-  <Project Path="ClinicManagementSystem.API/ClinicManagementSystem.API.csproj" />
+  <Project Path="ClinicManagementSystem.UnitTests/ClinicManagementSystem.UnitTests.csproj" Id="32a28536-671d-47aa-88ca-425d6347d3e8" />
 </Solution>
