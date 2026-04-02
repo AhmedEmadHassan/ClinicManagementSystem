@@ -3,6 +3,8 @@ using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
 using ClinicManagementSystem.Application.Features.DoctorSpecializations.Commands.Create;
+using ClinicManagementSystem.Application.Features.DoctorSpecializations.Commands.Delete;
+using ClinicManagementSystem.Application.Features.DoctorSpecializations.Commands.Update;
 using ClinicManagementSystem.Application.Features.DoctorSpecializations.Queries.GetById;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
 using ClinicManagementSystem.Domain.Entities;
@@ -116,33 +118,99 @@ namespace ClinicManagementSystem.Tests.Handlers
         [Fact]
         public async Task Create_WhenNameIsDuplicate_ThrowsDuplicateException()
         {
-
+            // Arrange
+            #region Ready Data
+            var CreateDto = new CreateDoctorSpecializationDTO { Name = "Dermatology" };
+            #endregion
+            #region Setup Mocks
+            _unitOfWorkMock.Setup(u => u.DoctorSpecializations.AnyAsync(It.IsAny<Expression<Func<DoctorSpecialization, bool>>>())).ReturnsAsync(true);
+            #endregion
+            #region Create Test Object
+            var Handler = new CreateDoctorSpecializationHandler(_unitOfWorkMock.Object, _mapperMock.Object);
+            #endregion
+            // Act
+            #region GetResult
+            var act = async () => await Handler.Handle(new CreateDoctorSpecializationCommand(CreateDto), CancellationToken.None);
+            #endregion
+            // Assert
+            #region Assertions
+            await act.Should().ThrowAsync<Exception>();
+            #endregion
         }
 
         // --- Update ---
         [Fact]
         public async Task Update_WhenSpecializationExists_ReturnsUpdatedDTO()
         {
+            // Arrange
+            var dto = new CreateDoctorSpecializationDTO { Name = "Updated" };
+            var specialization = new DoctorSpecialization { Id = 1, Name = "Old" };
+            var response = new ResponseDoctorSpecializationDTO { Id = 1, Name = "Updated" };
 
+            _unitOfWorkMock.Setup(u => u.DoctorSpecializations.GetByIdAsync(1)).ReturnsAsync(specialization);
+            _unitOfWorkMock.Setup(u => u.DoctorSpecializations.AnyAsync(It.IsAny<Expression<Func<DoctorSpecialization, bool>>>())).ReturnsAsync(false);
+            _mapperMock.Setup(m => m.Map(dto, specialization));
+            _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+            _mapperMock.Setup(m => m.Map<ResponseDoctorSpecializationDTO>(specialization)).Returns(response);
+
+            var handler = new UpdateDoctorSpecializationHandler(_unitOfWorkMock.Object, _mapperMock.Object);
+
+            // Act
+            var result = await handler.Handle(new UpdateDoctorSpecializationCommand(1, dto), CancellationToken.None);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Name.Should().Be("Updated");
         }
 
         [Fact]
         public async Task Update_WhenSpecializationNotFound_ThrowsNotFoundException()
         {
+            // Arrange
+            var dto = new CreateDoctorSpecializationDTO { Name = "Updated" };
+            _unitOfWorkMock.Setup(u => u.DoctorSpecializations.GetByIdAsync(99)).ReturnsAsync((DoctorSpecialization?)null);
 
+            var handler = new UpdateDoctorSpecializationHandler(_unitOfWorkMock.Object, _mapperMock.Object);
+
+            // Act
+            var act = async () => await handler.Handle(new UpdateDoctorSpecializationCommand(99, dto), CancellationToken.None);
+
+            // Assert
+            await act.Should().ThrowAsync<NotFoundException>();
         }
 
         // --- Delete ---
         [Fact]
         public async Task Delete_WhenSpecializationExists_ReturnsTrue()
         {
+            // Arrange
+            var specialization = new DoctorSpecialization { Id = 1, Name = "Cardiology" };
 
+            _unitOfWorkMock.Setup(u => u.DoctorSpecializations.GetByIdAsync(1)).ReturnsAsync(specialization);
+            _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);
+
+            var handler = new DeleteDoctorSpecializationHandler(_unitOfWorkMock.Object);
+
+            // Act
+            var result = await handler.Handle(new DeleteDoctorSpecializationCommand(1), CancellationToken.None);
+
+            // Assert
+            result.Should().BeTrue();
         }
 
         [Fact]
         public async Task Delete_WhenSpecializationNotFound_ThrowsNotFoundException()
         {
+            // Arrange
+            _unitOfWorkMock.Setup(u => u.DoctorSpecializations.GetByIdAsync(99)).ReturnsAsync((DoctorSpecialization?)null);
 
+            var handler = new DeleteDoctorSpecializationHandler(_unitOfWorkMock.Object);
+
+            // Act
+            var act = async () => await handler.Handle(new DeleteDoctorSpecializationCommand(99), CancellationToken.None);
+
+            // Assert
+            await act.Should().ThrowAsync<NotFoundException>();
         }
     }
 }
