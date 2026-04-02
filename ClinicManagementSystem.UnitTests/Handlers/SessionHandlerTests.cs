@@ -9,7 +9,6 @@ using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterfac
 using ClinicManagementSystem.Domain.Entities;
 using FluentAssertions;
 using Moq;
-using System.Linq.Expressions;
 
 namespace ClinicManagementSystem.UnitTests.Handlers
 {
@@ -59,15 +58,14 @@ namespace ClinicManagementSystem.UnitTests.Handlers
         [Fact]
         public async Task Create_WhenValidInput_ReturnsCreatedDTO()
         {
-            var dto = new CreateSessionDTO { AppointmentId = 1, PatientId = 1, DoctorId = 1 };
+            var dto = new CreateSessionDTO { AppointmentId = 1 };
+            var appointment = new Appointment { Id = 1, PatientId = 1, DoctorId = 1, AppointmentStateId = 1 };
             var entity = new Session { Id = 1, AppointmentId = 1, PatientId = 1, DoctorId = 1 };
             var patient = new Patient { Id = 1, Name = "John", Phone = "123", Gender = true };
             var doctor = new Doctor { Id = 1, Name = "Dr.Smith", Phone = "123", Gender = true, DoctorSpecializationId = 1 };
             var response = new ResponseSessionDTO { Id = 1, PatientName = "John", DoctorName = "Dr.Smith" };
 
-            _unitOfWorkMock.Setup(u => u.Appointments.AnyAsync(It.IsAny<Expression<Func<Appointment, bool>>>())).ReturnsAsync(true);
-            _unitOfWorkMock.Setup(u => u.Patients.AnyAsync(It.IsAny<Expression<Func<Patient, bool>>>())).ReturnsAsync(true);
-            _unitOfWorkMock.Setup(u => u.Doctors.AnyAsync(It.IsAny<Expression<Func<Doctor, bool>>>())).ReturnsAsync(true);
+            _unitOfWorkMock.Setup(u => u.Appointments.GetByIdAsync(1)).ReturnsAsync(appointment);
             _mapperMock.Setup(m => m.Map<Session>(dto)).Returns(entity);
             _unitOfWorkMock.Setup(u => u.Sessions.AddAsync(entity)).ReturnsAsync(entity);
             _unitOfWorkMock.Setup(u => u.SaveChangesAsync()).ReturnsAsync(1);

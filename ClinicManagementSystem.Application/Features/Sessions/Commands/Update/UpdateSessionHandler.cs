@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
+using ClinicManagementSystem.Application.DTOs.UpdateDTOs;
 using ClinicManagementSystem.Application.Exceptions;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
 using ClinicManagementSystem.Domain.Entities;
@@ -9,8 +9,7 @@ using MediatR;
 
 namespace ClinicManagementSystem.Application.Features.Sessions.Commands.Update
 {
-    // Commands/Update
-    public record UpdateSessionCommand(int Id, CreateSessionDTO Dto) : IRequest<ResponseSessionDTO>;
+    public record UpdateSessionCommand(int Id, UpdateSessionDTO Dto) : IRequest<ResponseSessionDTO>;
 
     public class UpdateSessionHandler : IRequestHandler<UpdateSessionCommand, ResponseSessionDTO>
     {
@@ -29,18 +28,6 @@ namespace ClinicManagementSystem.Application.Features.Sessions.Commands.Update
 
             if (session is null)
                 throw new NotFoundException(nameof(Session), request.Id);
-
-            var appointmentExists = await _unitOfWork.Appointments.AnyAsync(a => a.Id == request.Dto.AppointmentId);
-            if (!appointmentExists)
-                throw new NotFoundException(nameof(Appointment), request.Dto.AppointmentId);
-
-            var patientExists = await _unitOfWork.Patients.AnyAsync(p => p.Id == request.Dto.PatientId);
-            if (!patientExists)
-                throw new NotFoundException(nameof(Patient), request.Dto.PatientId);
-
-            var doctorExists = await _unitOfWork.Doctors.AnyAsync(d => d.Id == request.Dto.DoctorId);
-            if (!doctorExists)
-                throw new NotFoundException(nameof(Doctor), request.Dto.DoctorId);
 
             _mapper.Map(request.Dto, session);
 
@@ -61,14 +48,13 @@ namespace ClinicManagementSystem.Application.Features.Sessions.Commands.Update
     {
         public UpdateSessionValidator()
         {
-            RuleFor(x => x.Dto.AppointmentId)
-                .GreaterThan(0).WithMessage("AppointmentId must be a valid id.");
+            RuleFor(x => x.Dto.ConsultationNotes)
+                .MaximumLength(1000).WithMessage("ConsultationNotes must not exceed 1000 characters.")
+                .When(x => !string.IsNullOrWhiteSpace(x.Dto.ConsultationNotes));
 
-            RuleFor(x => x.Dto.PatientId)
-                .GreaterThan(0).WithMessage("PatientId must be a valid id.");
-
-            RuleFor(x => x.Dto.DoctorId)
-                .GreaterThan(0).WithMessage("DoctorId must be a valid id.");
+            RuleFor(x => x.Dto.Prescriptions)
+                .MaximumLength(1000).WithMessage("Prescriptions must not exceed 1000 characters.")
+                .When(x => !string.IsNullOrWhiteSpace(x.Dto.Prescriptions));
         }
     }
 }

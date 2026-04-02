@@ -1,8 +1,7 @@
-﻿namespace ClinicManagementSystem.Application.DTOs.CreateDTOs
+﻿namespace ClinicManagementSystem.Application.DTOs.UpdateDTOs
 {
-    public class CreateBillingDTO
+    public class UpdateBillingDTO
     {
-        public int SessionId { get; set; }
         public string Description { get; set; } = string.Empty;
         public decimal Amount { get; set; }
         public bool IsPaid { get; set; }
