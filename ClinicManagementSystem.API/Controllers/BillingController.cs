@@ -2,6 +2,7 @@
 using ClinicManagementSystem.API.Controllers.Base;
 using ClinicManagementSystem.Application.Common.Pagination;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
+using ClinicManagementSystem.Application.DTOs.UpdateDTOs;
 using ClinicManagementSystem.Application.Features.Billings.Commands.Create;
 using ClinicManagementSystem.Application.Features.Billings.Commands.Delete;
 using ClinicManagementSystem.Application.Features.Billings.Commands.Update;
@@ -37,7 +38,7 @@ namespace ClinicManagementSystem.API.Controllers
             => Created(await _mediator.Send(new CreateBillingCommand(dto)));
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] CreateBillingDTO dto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateBillingDTO dto)
             => Success(await _mediator.Send(new UpdateBillingCommand(id, dto)));
 
         [HttpDelete("{id}")]

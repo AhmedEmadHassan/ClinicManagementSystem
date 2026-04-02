@@ -2,6 +2,7 @@
 using ClinicManagementSystem.API.Controllers.Base;
 using ClinicManagementSystem.Application.Common.Pagination;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
+using ClinicManagementSystem.Application.DTOs.UpdateDTOs;
 using ClinicManagementSystem.Application.Features.Sessions.Commands.Create;
 using ClinicManagementSystem.Application.Features.Sessions.Commands.Delete;
 using ClinicManagementSystem.Application.Features.Sessions.Commands.Update;
@@ -37,7 +38,7 @@ namespace ClinicManagementSystem.API.Controllers
             => Created(await _mediator.Send(new CreateSessionCommand(dto)));
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] CreateSessionDTO dto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateSessionDTO dto)
             => Success(await _mediator.Send(new UpdateSessionCommand(id, dto)));
 
         [HttpDelete("{id}")]

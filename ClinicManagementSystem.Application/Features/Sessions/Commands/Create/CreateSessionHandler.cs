@@ -9,7 +9,6 @@ using MediatR;
 
 namespace ClinicManagementSystem.Application.Features.Sessions.Commands.Create
 {
-    // Commands/Create
     public record CreateSessionCommand(CreateSessionDTO Dto) : IRequest<ResponseSessionDTO>;
 
     public class CreateSessionHandler : IRequestHandler<CreateSessionCommand, ResponseSessionDTO>
@@ -25,19 +24,13 @@ namespace ClinicManagementSystem.Application.Features.Sessions.Commands.Create
 
         public async Task<ResponseSessionDTO> Handle(CreateSessionCommand request, CancellationToken cancellationToken)
         {
-            var appointmentExists = await _unitOfWork.Appointments.AnyAsync(a => a.Id == request.Dto.AppointmentId);
-            if (!appointmentExists)
+            var appointment = await _unitOfWork.Appointments.GetByIdAsync(request.Dto.AppointmentId);
+            if (appointment is null)
                 throw new NotFoundException(nameof(Appointment), request.Dto.AppointmentId);
 
-            var patientExists = await _unitOfWork.Patients.AnyAsync(p => p.Id == request.Dto.PatientId);
-            if (!patientExists)
-                throw new NotFoundException(nameof(Patient), request.Dto.PatientId);
-
-            var doctorExists = await _unitOfWork.Doctors.AnyAsync(d => d.Id == request.Dto.DoctorId);
-            if (!doctorExists)
-                throw new NotFoundException(nameof(Doctor), request.Dto.DoctorId);
-
             var entity = _mapper.Map<Session>(request.Dto);
+            entity.PatientId = appointment.PatientId;
+            entity.DoctorId = appointment.DoctorId;
 
             await _unitOfWork.Sessions.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -58,12 +51,6 @@ namespace ClinicManagementSystem.Application.Features.Sessions.Commands.Create
         {
             RuleFor(x => x.Dto.AppointmentId)
                 .GreaterThan(0).WithMessage("AppointmentId must be a valid id.");
-
-            RuleFor(x => x.Dto.PatientId)
-                .GreaterThan(0).WithMessage("PatientId must be a valid id.");
-
-            RuleFor(x => x.Dto.DoctorId)
-                .GreaterThan(0).WithMessage("DoctorId must be a valid id.");
         }
     }
 }

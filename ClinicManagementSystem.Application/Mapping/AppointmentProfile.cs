@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
+using ClinicManagementSystem.Application.DTOs.UpdateDTOs;
 using ClinicManagementSystem.Domain.Entities;
 
 namespace ClinicManagementSystem.Application.Mapping
@@ -16,6 +17,8 @@ namespace ClinicManagementSystem.Application.Mapping
 
             CreateMap<CreateAppointmentDTO, Appointment>()
                 .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
+
+            CreateMap<UpdateAppointmentDTO, Appointment>();
         }
     }
 }

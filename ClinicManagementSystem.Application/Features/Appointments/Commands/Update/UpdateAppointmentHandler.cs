@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
+using ClinicManagementSystem.Application.DTOs.UpdateDTOs;
 using ClinicManagementSystem.Application.Exceptions;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
 using ClinicManagementSystem.Domain.Entities;
@@ -9,8 +9,7 @@ using MediatR;
 
 namespace ClinicManagementSystem.Application.Features.Appointments.Commands.Update
 {
-    // Commands/Update
-    public record UpdateAppointmentCommand(int Id, CreateAppointmentDTO Dto) : IRequest<ResponseAppointmentDTO>;
+    public record UpdateAppointmentCommand(int Id, UpdateAppointmentDTO Dto) : IRequest<ResponseAppointmentDTO>;
 
     public class UpdateAppointmentHandler : IRequestHandler<UpdateAppointmentCommand, ResponseAppointmentDTO>
     {
@@ -29,14 +28,6 @@ namespace ClinicManagementSystem.Application.Features.Appointments.Commands.Upda
 
             if (appointment is null)
                 throw new NotFoundException(nameof(Appointment), request.Id);
-
-            var patientExists = await _unitOfWork.Patients.AnyAsync(p => p.Id == request.Dto.PatientId);
-            if (!patientExists)
-                throw new NotFoundException(nameof(Patient), request.Dto.PatientId);
-
-            var doctorExists = await _unitOfWork.Doctors.AnyAsync(d => d.Id == request.Dto.DoctorId);
-            if (!doctorExists)
-                throw new NotFoundException(nameof(Doctor), request.Dto.DoctorId);
 
             var stateExists = await _unitOfWork.AppointmentStates.AnyAsync(s => s.Id == request.Dto.AppointmentStateId);
             if (!stateExists)
@@ -63,12 +54,6 @@ namespace ClinicManagementSystem.Application.Features.Appointments.Commands.Upda
     {
         public UpdateAppointmentValidator()
         {
-            RuleFor(x => x.Dto.PatientId)
-                .GreaterThan(0).WithMessage("PatientId must be a valid id.");
-
-            RuleFor(x => x.Dto.DoctorId)
-                .GreaterThan(0).WithMessage("DoctorId must be a valid id.");
-
             RuleFor(x => x.Dto.AppointmentStateId)
                 .GreaterThan(0).WithMessage("AppointmentStateId must be a valid id.");
 

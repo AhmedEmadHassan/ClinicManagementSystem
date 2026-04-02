@@ -2,6 +2,7 @@
 using ClinicManagementSystem.API.Controllers.Base;
 using ClinicManagementSystem.Application.Common.Pagination;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
+using ClinicManagementSystem.Application.DTOs.UpdateDTOs;
 using ClinicManagementSystem.Application.Features.Appointments.Commands.Create;
 using ClinicManagementSystem.Application.Features.Appointments.Commands.Delete;
 using ClinicManagementSystem.Application.Features.Appointments.Commands.Update;
@@ -39,7 +40,7 @@ namespace ClinicManagementSystem.API.Controllers
 
         [HttpPut("{id}")]
         [Authorize(Roles = "Admin,Receptionist")]
-        public async Task<IActionResult> Update(int id, [FromBody] CreateAppointmentDTO dto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateAppointmentDTO dto)
             => Success(await _mediator.Send(new UpdateAppointmentCommand(id, dto)));
 
         [HttpDelete("{id}")]

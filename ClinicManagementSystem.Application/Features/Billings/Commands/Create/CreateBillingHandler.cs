@@ -9,7 +9,6 @@ using MediatR;
 
 namespace ClinicManagementSystem.Application.Features.Billings.Commands.Create
 {
-    // Commands/Create
     public record CreateBillingCommand(CreateBillingDTO Dto) : IRequest<ResponseBillingDTO>;
 
     public class CreateBillingHandler : IRequestHandler<CreateBillingCommand, ResponseBillingDTO>
@@ -25,15 +24,12 @@ namespace ClinicManagementSystem.Application.Features.Billings.Commands.Create
 
         public async Task<ResponseBillingDTO> Handle(CreateBillingCommand request, CancellationToken cancellationToken)
         {
-            var sessionExists = await _unitOfWork.Sessions.AnyAsync(s => s.Id == request.Dto.SessionId);
-            if (!sessionExists)
+            var session = await _unitOfWork.Sessions.GetByIdAsync(request.Dto.SessionId);
+            if (session is null)
                 throw new NotFoundException(nameof(Session), request.Dto.SessionId);
 
-            var patientExists = await _unitOfWork.Patients.AnyAsync(p => p.Id == request.Dto.PatientId);
-            if (!patientExists)
-                throw new NotFoundException(nameof(Patient), request.Dto.PatientId);
-
             var entity = _mapper.Map<Billing>(request.Dto);
+            entity.PatientId = session.PatientId;
 
             await _unitOfWork.Billings.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
@@ -51,9 +47,6 @@ namespace ClinicManagementSystem.Application.Features.Billings.Commands.Create
         {
             RuleFor(x => x.Dto.SessionId)
                 .GreaterThan(0).WithMessage("SessionId must be a valid id.");
-
-            RuleFor(x => x.Dto.PatientId)
-                .GreaterThan(0).WithMessage("PatientId must be a valid id.");
 
             RuleFor(x => x.Dto.Description)
                 .NotEmpty().WithMessage("Description is required.")
