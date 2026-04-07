@@ -23,7 +23,7 @@ ClinicManagementSystem/
 ├── ClinicManagementSystem.API # RESTful API entrypoint  
 ├── ClinicManagementSystem.Application # Application services, DTOs, workflows  
 ├── ClinicManagementSystem.Domain # Core business models & interfaces  
-├── ClinicManagementSystem.Infrastructure# Data access, EF Core or external services 
+├── ClinicManagementSystem.Infrastructure# Data access, EF Core or external services  
 ├── ClinicManagementSystem.UnitTests # Unit tests for business logic  
 ├── ClinicManagementSystem.slnx # .NET solution file  
 ├── .gitignore  
@@ -46,9 +46,6 @@ ClinicManagementSystem/
 ---
 
 ## 🚀 Key Features
-
-> Because of the lack of an existing README or documentation, this is inferred from the standard capabilities of projects organized in this pattern.
-
 ✔️ CRUD for Patients, Doctors, Appointments  
 ✔ Business rules encapsulated in Application layer  
 ✔ Persistence via Infrastructure project  
