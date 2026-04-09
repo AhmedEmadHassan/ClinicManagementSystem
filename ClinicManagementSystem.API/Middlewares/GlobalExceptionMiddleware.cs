@@ -38,30 +38,30 @@ namespace ClinicManagementSystem.API.Middlewares
                 case NotFoundException ex:
                     statusCode = StatusCodes.Status404NotFound;
                     message = ex.Message;
-                    _logger.LogWarning(ex, "Not found: {Message}", ex.Message);
+                    _logger.LogWarning(ex, "Not found at {Path}: {Message}", context.Request.Path, ex.Message);
                     break;
 
                 case BadRequestException ex:
                     statusCode = StatusCodes.Status400BadRequest;
                     message = ex.Message;
-                    _logger.LogWarning(ex, "Bad request: {Message}", ex.Message);
+                    _logger.LogWarning(ex, "Bad request at {Path}: {Message}", context.Request.Path, ex.Message);
                     break;
 
                 case DuplicateException ex:
                     statusCode = StatusCodes.Status409Conflict;
                     message = ex.Message;
-                    _logger.LogWarning(ex, "Duplicate: {Message}", ex.Message);
+                    _logger.LogWarning(ex, "Duplicate at {Path}: {Message}", context.Request.Path, ex.Message);
                     break;
 
                 case CustomValidationException ex:
                     statusCode = StatusCodes.Status400BadRequest;
                     message = string.Join(", ", ex.Errors);
-                    _logger.LogWarning(ex, "Validation failed: {Errors}", message);
+                    _logger.LogWarning(ex, "Validation failed at {Path}: {Errors}", context.Request.Path, message);
                     break;
 
                 default:
                     statusCode = StatusCodes.Status500InternalServerError;
-                    message = exception.Message;
+                    message = "Something went wrong.";
                     _logger.LogError(exception, "Unhandled exception at {Path}", context.Request.Path);
                     break;
             }
@@ -69,8 +69,7 @@ namespace ClinicManagementSystem.API.Middlewares
             context.Response.StatusCode = statusCode;
 
             await context.Response.WriteAsJsonAsync(
-                ApiResponse<object>.Failure(message, statusCode)
-            );
+                ApiResponse<object>.Failure(message, statusCode));
         }
     }
 }
