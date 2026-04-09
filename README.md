@@ -72,7 +72,7 @@ ClinicManagementSystem/
 | Swagger UI with JWT         | ✅      |
 | Unit Testing                | ✅      |
 | Separate Create/Update DTOs | ✅      |
-| Logging (Serilog)           | ⏳      |
+| Logging (Serilog)           | ✅      |
 | Caching                     | ⏳      |
 | Localization                | ⏳      |
 | Multi-Device Refresh Token  | ⏳      |
@@ -366,7 +366,7 @@ dotnet test
 
 ## Improvements Roadmap
 
-- [ ] Logging (Serilog)
+- [x] Logging (Serilog)
 - [ ] Caching
 - [ ] Localization
 - [ ] Multi-Device Refresh Token Support
