@@ -43,7 +43,7 @@ namespace ClinicManagementSystem.Application
 
 
             AddMediatRValidation(services);
-
+            services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
             AddDependencyInjection(services);
             return services;
         }

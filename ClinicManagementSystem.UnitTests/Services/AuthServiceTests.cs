@@ -6,6 +6,7 @@ using ClinicManagementSystem.Application.Services.Implementation.Auth;
 using ClinicManagementSystem.Domain.Entities.Identity;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -15,6 +16,7 @@ namespace ClinicManagementSystem.UnitTests.Services
     {
         private readonly Mock<UserManager<ApplicationUser>> _userManagerMock;
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+        private readonly Mock<ILogger<AuthService>> _loggerMock;
         private readonly AuthService _authService;
 
         public AuthServiceTests()
@@ -23,6 +25,7 @@ namespace ClinicManagementSystem.UnitTests.Services
                 Mock.Of<IUserStore<ApplicationUser>>(), null, null, null, null, null, null, null, null);
 
             _unitOfWorkMock = new Mock<IUnitOfWork>();
+            _loggerMock = new Mock<ILogger<AuthService>>();
 
             var jwtSettings = Options.Create(new JwtSettings
             {
@@ -33,7 +36,11 @@ namespace ClinicManagementSystem.UnitTests.Services
                 RefreshTokenDurationInDays = 7
             });
 
-            _authService = new AuthService(_userManagerMock.Object, _unitOfWorkMock.Object, jwtSettings);
+            _authService = new AuthService(
+                _userManagerMock.Object,
+                _unitOfWorkMock.Object,
+                jwtSettings,
+                _loggerMock.Object);
         }
 
         // --- Register ---

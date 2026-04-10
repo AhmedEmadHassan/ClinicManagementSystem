@@ -6,6 +6,7 @@ using ClinicManagementSystem.Application.Services.Abstraction.Auth;
 using ClinicManagementSystem.Domain.Entities;
 using ClinicManagementSystem.Domain.Entities.Identity;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -20,33 +21,50 @@ namespace ClinicManagementSystem.Application.Services.Implementation.Auth
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IUnitOfWork _unitOfWork;
         private readonly JwtSettings _jwtSettings;
+        private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             UserManager<ApplicationUser> userManager,
             IUnitOfWork unitOfWork,
-            IOptions<JwtSettings> jwtSettings)
+            IOptions<JwtSettings> jwtSettings,
+            ILogger<AuthService> logger)
         {
             _userManager = userManager;
             _unitOfWork = unitOfWork;
             _jwtSettings = jwtSettings.Value;
+            _logger = logger;
         }
 
         public async Task<AuthResponseDTO> Register(RegisterDTO dto)
         {
+            _logger.LogInformation("Register attempt for username: {UserName} with role: {Role}", dto.UserName, dto.Role);
+
             var existingUser = await _userManager.FindByNameAsync(dto.UserName);
             if (existingUser is not null)
+            {
+                _logger.LogWarning("Register failed — username already exists: {UserName}", dto.UserName);
                 throw new DuplicateException($"Username '{dto.UserName}' is already taken.");
+            }
 
             var validRoles = new[] { "Admin", "Doctor", "Patient", "Receptionist" };
             if (!validRoles.Contains(dto.Role))
+            {
+                _logger.LogWarning("Register failed — invalid role: {Role}", dto.Role);
                 throw new BadRequestException($"Invalid role '{dto.Role}'. Accepted values are: {string.Join(", ", validRoles)}.");
+            }
 
             if (dto.Role == "Doctor" && dto.DoctorSpecializationId is null)
+            {
+                _logger.LogWarning("Register failed — DoctorSpecializationId is required for Doctor role");
                 throw new BadRequestException("DoctorSpecializationId is required when registering a Doctor.");
+            }
 
             if ((dto.Role == "Doctor" || dto.Role == "Patient") &&
                 (string.IsNullOrWhiteSpace(dto.Phone) || string.IsNullOrWhiteSpace(dto.Gender)))
+            {
+                _logger.LogWarning("Register failed — Phone and Gender are required for {Role} role", dto.Role);
                 throw new BadRequestException("Phone and Gender are required when registering a Doctor or Patient.");
+            }
 
             var user = new ApplicationUser
             {
@@ -56,7 +74,10 @@ namespace ClinicManagementSystem.Application.Services.Implementation.Auth
 
             var result = await _userManager.CreateAsync(user, dto.Password);
             if (!result.Succeeded)
+            {
+                _logger.LogWarning("Register failed — identity errors: {Errors}", string.Join(", ", result.Errors.Select(e => e.Description)));
                 throw new BadRequestException(string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
 
             await _userManager.AddToRoleAsync(user, dto.Role);
 
@@ -102,21 +123,30 @@ namespace ClinicManagementSystem.Application.Services.Implementation.Auth
                 await _userManager.UpdateAsync(user);
             }
 
+            _logger.LogInformation("User registered successfully: {UserName} with role: {Role}", dto.UserName, dto.Role);
             return await GenerateAuthResponse(user);
         }
 
         public async Task<AuthResponseDTO> Login(LoginDTO dto)
         {
+            _logger.LogInformation("Login attempt for username: {UserName}", dto.UserName);
+
             var user = await _userManager.FindByNameAsync(dto.UserName);
 
             if (user is null || !await _userManager.CheckPasswordAsync(user, dto.Password))
+            {
+                _logger.LogWarning("Login failed — invalid credentials for username: {UserName}", dto.UserName);
                 throw new BadRequestException("Invalid username or password.");
+            }
 
+            _logger.LogInformation("Login successful for username: {UserName}", dto.UserName);
             return await GenerateAuthResponse(user);
         }
 
         public async Task<AuthResponseDTO> RefreshToken(RefreshTokenDTO dto)
         {
+            _logger.LogInformation("Refresh token attempt");
+
             var principal = GetPrincipalFromExpiredToken(dto.AccessToken);
             var userName = principal.Identity?.Name;
 
@@ -125,38 +155,58 @@ namespace ClinicManagementSystem.Application.Services.Implementation.Auth
             if (user is null ||
                 user.RefreshToken != dto.RefreshToken ||
                 user.RefreshTokenExpiryTime <= DateTime.UtcNow)
+            {
+                _logger.LogWarning("Refresh token failed — invalid or expired token for username: {UserName}", userName);
                 throw new BadRequestException("Invalid or expired refresh token.");
+            }
 
+            _logger.LogInformation("Token refreshed successfully for username: {UserName}", user.UserName);
             return await GenerateAuthResponse(user);
         }
 
         public async Task Logout(string userName)
         {
+            _logger.LogInformation("Logout attempt for username: {UserName}", userName);
+
             var user = await _userManager.FindByNameAsync(userName);
 
             if (user is null)
+            {
+                _logger.LogWarning("Logout failed — user not found: {UserName}", userName);
                 throw new NotFoundException("User", 0);
+            }
 
             user.RefreshToken = null;
             user.RefreshTokenExpiryTime = null;
 
             await _userManager.UpdateAsync(user);
+
+            _logger.LogInformation("Logout successful for username: {UserName}", userName);
         }
 
         public async Task ChangePassword(string userName, ChangePasswordDTO dto)
         {
+            _logger.LogInformation("Change password attempt for username: {UserName}", userName);
+
             var user = await _userManager.FindByNameAsync(userName);
 
             if (user is null)
+            {
+                _logger.LogWarning("Change password failed — user not found: {UserName}", userName);
                 throw new NotFoundException("User", 0);
+            }
 
             var result = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
 
             if (!result.Succeeded)
+            {
+                _logger.LogWarning("Change password failed for username: {UserName} — {Errors}", userName, string.Join(", ", result.Errors.Select(e => e.Description)));
                 throw new BadRequestException(string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+
+            _logger.LogInformation("Password changed successfully for username: {UserName}", userName);
         }
 
-        // --- Helpers ---
         private async Task<AuthResponseDTO> GenerateAuthResponse(ApplicationUser user)
         {
             var roles = await _userManager.GetRolesAsync(user);
