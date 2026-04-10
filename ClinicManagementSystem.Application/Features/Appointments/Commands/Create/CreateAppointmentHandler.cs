@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Cache;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
@@ -12,18 +13,22 @@ namespace ClinicManagementSystem.Application.Features.Appointments.Commands.Crea
     // Commands/Create
     public record CreateAppointmentCommand(CreateAppointmentDTO Dto) : IRequest<ResponseAppointmentDTO>;
 
-    public class CreateAppointmentHandler : IRequestHandler<CreateAppointmentCommand, ResponseAppointmentDTO>
+    public class CreateAppointmentHandler
+    : IRequestHandler<CreateAppointmentCommand, ResponseAppointmentDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cache;
 
-        public CreateAppointmentHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreateAppointmentHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cache = cache;
         }
 
-        public async Task<ResponseAppointmentDTO> Handle(CreateAppointmentCommand request, CancellationToken cancellationToken)
+        public async Task<ResponseAppointmentDTO> Handle(
+            CreateAppointmentCommand request, CancellationToken cancellationToken)
         {
             var patientExists = await _unitOfWork.Patients.AnyAsync(p => p.Id == request.Dto.PatientId);
             if (!patientExists)
@@ -49,6 +54,8 @@ namespace ClinicManagementSystem.Application.Features.Appointments.Commands.Crea
             entity.Patient = patient;
             entity.Doctor = doctor;
             entity.AppointmentState = state;
+
+            _cache.RemoveByPrefix(CacheKeys.Appointment);
 
             return _mapper.Map<ResponseAppointmentDTO>(entity);
         }

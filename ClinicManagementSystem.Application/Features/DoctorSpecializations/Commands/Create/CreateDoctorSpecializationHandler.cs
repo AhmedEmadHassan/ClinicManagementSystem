@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Cache;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
@@ -11,18 +12,22 @@ namespace ClinicManagementSystem.Application.Features.DoctorSpecializations.Comm
     // Commands/Create
     public record CreateDoctorSpecializationCommand(CreateDoctorSpecializationDTO Dto) : IRequest<ResponseDoctorSpecializationDTO>;
 
-    public class CreateDoctorSpecializationHandler : IRequestHandler<CreateDoctorSpecializationCommand, ResponseDoctorSpecializationDTO>
+    public class CreateDoctorSpecializationHandler
+    : IRequestHandler<CreateDoctorSpecializationCommand, ResponseDoctorSpecializationDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cache;
 
-        public CreateDoctorSpecializationHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreateDoctorSpecializationHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cache = cache;
         }
 
-        public async Task<ResponseDoctorSpecializationDTO> Handle(CreateDoctorSpecializationCommand request, CancellationToken cancellationToken)
+        public async Task<ResponseDoctorSpecializationDTO> Handle(
+            CreateDoctorSpecializationCommand request, CancellationToken cancellationToken)
         {
             var exists = await _unitOfWork.DoctorSpecializations.AnyAsync(s => s.Name == request.Dto.Name);
 
@@ -31,8 +36,10 @@ namespace ClinicManagementSystem.Application.Features.DoctorSpecializations.Comm
 
             var entity = _mapper.Map<DoctorSpecialization>(request.Dto);
 
-            await _unitOfWork.SaveChangesAsync();
             await _unitOfWork.DoctorSpecializations.AddAsync(entity);
+            await _unitOfWork.SaveChangesAsync();
+
+            _cache.RemoveByPrefix(CacheKeys.DoctorSpecialization);
 
             return _mapper.Map<ResponseDoctorSpecializationDTO>(entity);
         }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Cache;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
@@ -11,23 +12,29 @@ namespace ClinicManagementSystem.Application.Features.Patients.Commands.Create
     // Commands/Create
     public record CreatePatientCommand(CreatePatientDTO Dto) : IRequest<ResponsePatientDTO>;
 
-    public class CreatePatientHandler : IRequestHandler<CreatePatientCommand, ResponsePatientDTO>
+    public class CreatePatientHandler
+    : IRequestHandler<CreatePatientCommand, ResponsePatientDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cache;
 
-        public CreatePatientHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreatePatientHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cache = cache;
         }
 
-        public async Task<ResponsePatientDTO> Handle(CreatePatientCommand request, CancellationToken cancellationToken)
+        public async Task<ResponsePatientDTO> Handle(
+            CreatePatientCommand request, CancellationToken cancellationToken)
         {
             var entity = _mapper.Map<Patient>(request.Dto);
 
             await _unitOfWork.Patients.AddAsync(entity);
             await _unitOfWork.SaveChangesAsync();
+
+            _cache.RemoveByPrefix(CacheKeys.Patient);
 
             return _mapper.Map<ResponsePatientDTO>(entity);
         }

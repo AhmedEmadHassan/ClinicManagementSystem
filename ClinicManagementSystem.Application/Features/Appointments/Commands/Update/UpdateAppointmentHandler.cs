@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Cache;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.DTOs.UpdateDTOs;
 using ClinicManagementSystem.Application.Exceptions;
@@ -11,18 +12,22 @@ namespace ClinicManagementSystem.Application.Features.Appointments.Commands.Upda
 {
     public record UpdateAppointmentCommand(int Id, UpdateAppointmentDTO Dto) : IRequest<ResponseAppointmentDTO>;
 
-    public class UpdateAppointmentHandler : IRequestHandler<UpdateAppointmentCommand, ResponseAppointmentDTO>
+    public class UpdateAppointmentHandler
+    : IRequestHandler<UpdateAppointmentCommand, ResponseAppointmentDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cache;
 
-        public UpdateAppointmentHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpdateAppointmentHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cache = cache;
         }
 
-        public async Task<ResponseAppointmentDTO> Handle(UpdateAppointmentCommand request, CancellationToken cancellationToken)
+        public async Task<ResponseAppointmentDTO> Handle(
+            UpdateAppointmentCommand request, CancellationToken cancellationToken)
         {
             var appointment = await _unitOfWork.Appointments.GetByIdAsync(request.Id);
 
@@ -45,6 +50,8 @@ namespace ClinicManagementSystem.Application.Features.Appointments.Commands.Upda
             appointment.Patient = patient;
             appointment.Doctor = doctor;
             appointment.AppointmentState = state;
+
+            _cache.RemoveByPrefix(CacheKeys.Appointment);
 
             return _mapper.Map<ResponseAppointmentDTO>(appointment);
         }

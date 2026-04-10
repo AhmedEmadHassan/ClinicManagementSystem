@@ -73,7 +73,7 @@ ClinicManagementSystem/
 | Unit Testing                | ✅      |
 | Separate Create/Update DTOs | ✅      |
 | Logging (Serilog)           | ✅      |
-| Caching                     | ⏳      |
+| Caching                     | ✅      |
 | Localization                | ⏳      |
 | Multi-Device Refresh Token  | ⏳      |
 
@@ -367,7 +367,7 @@ dotnet test
 ## Improvements Roadmap
 
 - [x] Logging (Serilog)
-- [ ] Caching
+- [x] Caching
 - [ ] Localization
 - [ ] Multi-Device Refresh Token Support
 - [ ] Use Cases (beyond CRUD)

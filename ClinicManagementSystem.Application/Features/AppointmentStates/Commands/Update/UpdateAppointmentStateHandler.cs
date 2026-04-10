@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Cache;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
@@ -12,18 +13,22 @@ namespace ClinicManagementSystem.Application.Features.AppointmentStates.Commands
     // Commands/Update
     public record UpdateAppointmentStateCommand(int Id, CreateAppointmentStateDTO Dto) : IRequest<ResponseAppointmentStateDTO>;
 
-    public class UpdateAppointmentStateHandler : IRequestHandler<UpdateAppointmentStateCommand, ResponseAppointmentStateDTO>
+    public class UpdateAppointmentStateHandler
+    : IRequestHandler<UpdateAppointmentStateCommand, ResponseAppointmentStateDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cache;
 
-        public UpdateAppointmentStateHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpdateAppointmentStateHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cache = cache;
         }
 
-        public async Task<ResponseAppointmentStateDTO> Handle(UpdateAppointmentStateCommand request, CancellationToken cancellationToken)
+        public async Task<ResponseAppointmentStateDTO> Handle(
+            UpdateAppointmentStateCommand request, CancellationToken cancellationToken)
         {
             var state = await _unitOfWork.AppointmentStates.GetByIdAsync(request.Id);
 
@@ -39,6 +44,8 @@ namespace ClinicManagementSystem.Application.Features.AppointmentStates.Commands
 
             await _unitOfWork.AppointmentStates.UpdateAsync(state);
             await _unitOfWork.SaveChangesAsync();
+
+            _cache.RemoveByPrefix(CacheKeys.AppointmentState);
 
             return _mapper.Map<ResponseAppointmentStateDTO>(state);
         }

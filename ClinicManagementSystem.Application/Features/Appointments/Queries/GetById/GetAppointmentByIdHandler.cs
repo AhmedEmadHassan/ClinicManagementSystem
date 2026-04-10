@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Cache;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
 using ClinicManagementSystem.Application.RepositoryInterfaces.UnitOfWorkInterface;
@@ -10,19 +11,29 @@ namespace ClinicManagementSystem.Application.Features.Appointments.Queries.GetBy
     // Queries/GetById
     public record GetAppointmentByIdQuery(int Id) : IRequest<ResponseAppointmentDTO>;
 
-    public class GetAppointmentByIdHandler : IRequestHandler<GetAppointmentByIdQuery, ResponseAppointmentDTO>
+    public class GetAppointmentByIdHandler
+    : IRequestHandler<GetAppointmentByIdQuery, ResponseAppointmentDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cache;
 
-        public GetAppointmentByIdHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public GetAppointmentByIdHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cache = cache;
         }
 
-        public async Task<ResponseAppointmentDTO> Handle(GetAppointmentByIdQuery request, CancellationToken cancellationToken)
+        public async Task<ResponseAppointmentDTO> Handle(
+            GetAppointmentByIdQuery request, CancellationToken cancellationToken)
         {
+            var cacheKey = CacheKeys.GetById(CacheKeys.Appointment, request.Id);
+            var cached = _cache.Get<ResponseAppointmentDTO>(cacheKey);
+
+            if (cached is not null)
+                return cached;
+
             var appointment = await _unitOfWork.Appointments.GetByIdAsync(request.Id);
 
             if (appointment is null)
@@ -36,7 +47,9 @@ namespace ClinicManagementSystem.Application.Features.Appointments.Queries.GetBy
             appointment.Doctor = doctor;
             appointment.AppointmentState = state;
 
-            return _mapper.Map<ResponseAppointmentDTO>(appointment);
+            var dto = _mapper.Map<ResponseAppointmentDTO>(appointment);
+            _cache.Set(cacheKey, dto);
+            return dto;
         }
     }
 }

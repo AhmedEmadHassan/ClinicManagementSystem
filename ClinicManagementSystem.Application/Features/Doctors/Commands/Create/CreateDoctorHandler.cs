@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Cache;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
@@ -12,18 +13,22 @@ namespace ClinicManagementSystem.Application.Features.Doctors.Commands.Create
     // Commands/Create
     public record CreateDoctorCommand(CreateDoctorDTO Dto) : IRequest<ResponseDoctorDTO>;
 
-    public class CreateDoctorHandler : IRequestHandler<CreateDoctorCommand, ResponseDoctorDTO>
+    public class CreateDoctorHandler
+    : IRequestHandler<CreateDoctorCommand, ResponseDoctorDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cache;
 
-        public CreateDoctorHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreateDoctorHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cache = cache;
         }
 
-        public async Task<ResponseDoctorDTO> Handle(CreateDoctorCommand request, CancellationToken cancellationToken)
+        public async Task<ResponseDoctorDTO> Handle(
+            CreateDoctorCommand request, CancellationToken cancellationToken)
         {
             var specializationExists = await _unitOfWork.DoctorSpecializations.AnyAsync(s => s.Id == request.Dto.DoctorSpecializationId);
 
@@ -37,6 +42,8 @@ namespace ClinicManagementSystem.Application.Features.Doctors.Commands.Create
 
             var specialization = await _unitOfWork.DoctorSpecializations.GetByIdAsync(entity.DoctorSpecializationId);
             entity.DoctorSpecialization = specialization;
+
+            _cache.RemoveByPrefix(CacheKeys.Doctor);
 
             return _mapper.Map<ResponseDoctorDTO>(entity);
         }
