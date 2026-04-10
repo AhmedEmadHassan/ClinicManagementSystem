@@ -1,4 +1,5 @@
 ﻿using ClinicManagementSystem.Application.Common.Behaviors;
+using ClinicManagementSystem.Application.Common.Cache;
 using ClinicManagementSystem.Application.Services.Abstraction.Auth;
 using ClinicManagementSystem.Application.Services.Implementation.Auth;
 using FluentValidation;
@@ -40,7 +41,8 @@ namespace ClinicManagementSystem.Application
                 };
             });
             services.AddAutoMapper(cfg => { }, typeof(ApplicationDependencies).Assembly);
-
+            services.AddMemoryCache();
+            services.AddSingleton<ICacheService, CacheService>();
 
             AddMediatRValidation(services);
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));

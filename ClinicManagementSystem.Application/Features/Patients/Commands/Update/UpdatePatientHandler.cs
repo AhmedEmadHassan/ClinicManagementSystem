@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Cache;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
@@ -12,18 +13,22 @@ namespace ClinicManagementSystem.Application.Features.Patients.Commands.Update
     // Commands/Update
     public record UpdatePatientCommand(int Id, CreatePatientDTO Dto) : IRequest<ResponsePatientDTO>;
 
-    public class UpdatePatientHandler : IRequestHandler<UpdatePatientCommand, ResponsePatientDTO>
+    public class UpdatePatientHandler
+    : IRequestHandler<UpdatePatientCommand, ResponsePatientDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cache;
 
-        public UpdatePatientHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpdatePatientHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cache = cache;
         }
 
-        public async Task<ResponsePatientDTO> Handle(UpdatePatientCommand request, CancellationToken cancellationToken)
+        public async Task<ResponsePatientDTO> Handle(
+            UpdatePatientCommand request, CancellationToken cancellationToken)
         {
             var patient = await _unitOfWork.Patients.GetByIdAsync(request.Id);
 
@@ -34,6 +39,8 @@ namespace ClinicManagementSystem.Application.Features.Patients.Commands.Update
 
             await _unitOfWork.Patients.UpdateAsync(patient);
             await _unitOfWork.SaveChangesAsync();
+
+            _cache.RemoveByPrefix(CacheKeys.Patient);
 
             return _mapper.Map<ResponsePatientDTO>(patient);
         }

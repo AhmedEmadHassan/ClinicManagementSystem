@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Cache;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
@@ -12,18 +13,22 @@ namespace ClinicManagementSystem.Application.Features.DoctorSpecializations.Comm
     // Commands/Update
     public record UpdateDoctorSpecializationCommand(int Id, CreateDoctorSpecializationDTO Dto) : IRequest<ResponseDoctorSpecializationDTO>;
 
-    public class UpdateDoctorSpecializationHandler : IRequestHandler<UpdateDoctorSpecializationCommand, ResponseDoctorSpecializationDTO>
+    public class UpdateDoctorSpecializationHandler
+    : IRequestHandler<UpdateDoctorSpecializationCommand, ResponseDoctorSpecializationDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cache;
 
-        public UpdateDoctorSpecializationHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpdateDoctorSpecializationHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cache = cache;
         }
 
-        public async Task<ResponseDoctorSpecializationDTO> Handle(UpdateDoctorSpecializationCommand request, CancellationToken cancellationToken)
+        public async Task<ResponseDoctorSpecializationDTO> Handle(
+            UpdateDoctorSpecializationCommand request, CancellationToken cancellationToken)
         {
             var specialization = await _unitOfWork.DoctorSpecializations.GetByIdAsync(request.Id);
 
@@ -39,6 +44,8 @@ namespace ClinicManagementSystem.Application.Features.DoctorSpecializations.Comm
 
             await _unitOfWork.DoctorSpecializations.UpdateAsync(specialization);
             await _unitOfWork.SaveChangesAsync();
+
+            _cache.RemoveByPrefix(CacheKeys.DoctorSpecialization);
 
             return _mapper.Map<ResponseDoctorSpecializationDTO>(specialization);
         }

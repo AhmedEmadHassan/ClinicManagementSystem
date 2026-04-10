@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Cache;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.DTOs.UpdateDTOs;
 using ClinicManagementSystem.Application.Exceptions;
@@ -11,18 +12,22 @@ namespace ClinicManagementSystem.Application.Features.Billings.Commands.Update
 {
     public record UpdateBillingCommand(int Id, UpdateBillingDTO Dto) : IRequest<ResponseBillingDTO>;
 
-    public class UpdateBillingHandler : IRequestHandler<UpdateBillingCommand, ResponseBillingDTO>
+    public class UpdateBillingHandler
+    : IRequestHandler<UpdateBillingCommand, ResponseBillingDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cache;
 
-        public UpdateBillingHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpdateBillingHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cache = cache;
         }
 
-        public async Task<ResponseBillingDTO> Handle(UpdateBillingCommand request, CancellationToken cancellationToken)
+        public async Task<ResponseBillingDTO> Handle(
+            UpdateBillingCommand request, CancellationToken cancellationToken)
         {
             var billing = await _unitOfWork.Billings.GetByIdAsync(request.Id);
 
@@ -36,6 +41,8 @@ namespace ClinicManagementSystem.Application.Features.Billings.Commands.Update
 
             var patient = await _unitOfWork.Patients.GetByIdAsync(billing.PatientId);
             billing.Patient = patient;
+
+            _cache.RemoveByPrefix(CacheKeys.Billing);
 
             return _mapper.Map<ResponseBillingDTO>(billing);
         }

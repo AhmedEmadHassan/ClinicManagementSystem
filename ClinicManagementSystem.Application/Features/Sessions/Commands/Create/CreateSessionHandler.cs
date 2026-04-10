@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Cache;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
@@ -11,18 +12,22 @@ namespace ClinicManagementSystem.Application.Features.Sessions.Commands.Create
 {
     public record CreateSessionCommand(CreateSessionDTO Dto) : IRequest<ResponseSessionDTO>;
 
-    public class CreateSessionHandler : IRequestHandler<CreateSessionCommand, ResponseSessionDTO>
+    public class CreateSessionHandler
+    : IRequestHandler<CreateSessionCommand, ResponseSessionDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cache;
 
-        public CreateSessionHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreateSessionHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cache = cache;
         }
 
-        public async Task<ResponseSessionDTO> Handle(CreateSessionCommand request, CancellationToken cancellationToken)
+        public async Task<ResponseSessionDTO> Handle(
+            CreateSessionCommand request, CancellationToken cancellationToken)
         {
             var appointment = await _unitOfWork.Appointments.GetByIdAsync(request.Dto.AppointmentId);
             if (appointment is null)
@@ -40,6 +45,8 @@ namespace ClinicManagementSystem.Application.Features.Sessions.Commands.Create
 
             entity.Patient = patient;
             entity.Doctor = doctor;
+
+            _cache.RemoveByPrefix(CacheKeys.Session);
 
             return _mapper.Map<ResponseSessionDTO>(entity);
         }

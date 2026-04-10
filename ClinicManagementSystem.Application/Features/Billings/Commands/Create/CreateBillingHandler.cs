@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using ClinicManagementSystem.Application.Common.Cache;
 using ClinicManagementSystem.Application.DTOs.CreateDTOs;
 using ClinicManagementSystem.Application.DTOs.ResponseDTOs;
 using ClinicManagementSystem.Application.Exceptions;
@@ -11,18 +12,22 @@ namespace ClinicManagementSystem.Application.Features.Billings.Commands.Create
 {
     public record CreateBillingCommand(CreateBillingDTO Dto) : IRequest<ResponseBillingDTO>;
 
-    public class CreateBillingHandler : IRequestHandler<CreateBillingCommand, ResponseBillingDTO>
+    public class CreateBillingHandler
+    : IRequestHandler<CreateBillingCommand, ResponseBillingDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cache;
 
-        public CreateBillingHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public CreateBillingHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cache)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cache = cache;
         }
 
-        public async Task<ResponseBillingDTO> Handle(CreateBillingCommand request, CancellationToken cancellationToken)
+        public async Task<ResponseBillingDTO> Handle(
+            CreateBillingCommand request, CancellationToken cancellationToken)
         {
             var session = await _unitOfWork.Sessions.GetByIdAsync(request.Dto.SessionId);
             if (session is null)
@@ -36,6 +41,8 @@ namespace ClinicManagementSystem.Application.Features.Billings.Commands.Create
 
             var patient = await _unitOfWork.Patients.GetByIdAsync(entity.PatientId);
             entity.Patient = patient;
+
+            _cache.RemoveByPrefix(CacheKeys.Billing);
 
             return _mapper.Map<ResponseBillingDTO>(entity);
         }
