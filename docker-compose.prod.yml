@@ -1,0 +1,10 @@
+services:
+  api:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+    restart: always  # Stricter restart policy in production
+
+  sqlserver:
+    environment:
+      - MSSQL_PID=Standard  # Better SQL Server edition for production
+    restart: always

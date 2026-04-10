@@ -2,8 +2,11 @@ using Asp.Versioning;
 using ClinicManagementSystem.API.Middlewares;
 using ClinicManagementSystem.API.RateLimiting;
 using ClinicManagementSystem.Application;
+using ClinicManagementSystem.Domain.Entities.Identity;
 using ClinicManagementSystem.Infrastructure;
+using ClinicManagementSystem.Infrastructure.Context;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Serilog;
 
@@ -75,6 +78,13 @@ try
 
     #endregion
     var app = builder.Build();
+    #region Apply Migrations
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
+    }
+    #endregion
     // Add request logging
     app.UseSerilogRequestLogging(options =>
     {
@@ -92,7 +102,42 @@ try
         }
     }
     #endregion
+    #region Seed Admin User
+    using (var scope = app.Services.CreateScope())
+    {
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
+        const string adminRole = "Admin";
+        const string adminUserName = "admin";
+        const string adminPassword = "Admin@123456";
+
+        // Ensure role exists
+        if (!await roleManager.RoleExistsAsync(adminRole))
+        {
+            await roleManager.CreateAsync(new IdentityRole(adminRole));
+        }
+
+        // 🔑 Check if ANY user is in Admin role
+        var admins = await userManager.GetUsersInRoleAsync(adminRole);
+
+        if (!admins.Any())
+        {
+            var user = new ApplicationUser
+            {
+                UserName = adminUserName,
+                Email = "admin@clinic.com"
+            };
+
+            var result = await userManager.CreateAsync(user, adminPassword);
+
+            if (result.Succeeded)
+            {
+                await userManager.AddToRoleAsync(user, adminRole);
+            }
+        }
+    }
+    #endregion
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {

@@ -372,5 +372,5 @@ dotnet test
 - [ ] Multi-Device Refresh Token Support
 - [ ] Use Cases (beyond CRUD)
 - [ ] Integration Tests
-- [ ] Docker Support
+- [x] Docker Support
 - [ ] CI/CD Pipeline
