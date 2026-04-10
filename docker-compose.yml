@@ -7,7 +7,6 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__SqlServerConnection=Server=sqlserver,1433;Database=ClinicManagementDB;User Id=sa;Password=Clinic@Password123;TrustServerCertificate=True;
       - JwtSettings__Key=YourSuperSecretKeyHereMustBe32CharsMin!
