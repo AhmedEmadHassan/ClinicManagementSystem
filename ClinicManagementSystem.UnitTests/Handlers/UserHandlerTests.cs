@@ -193,5 +193,31 @@ namespace ClinicManagementSystem.UnitTests.Handlers
 
             await act.Should().ThrowAsync<BadRequestException>();
         }
+
+        [Fact]
+        public async Task GetByUsername_WhenUserExists_ReturnsDTO()
+        {
+            var user = new ApplicationUser { Id = "1", UserName = "admin", Email = "admin@clinic.com" };
+            _userManagerMock.Setup(u => u.FindByNameAsync("admin")).ReturnsAsync(user);
+            _userManagerMock.Setup(u => u.GetRolesAsync(user)).ReturnsAsync(new List<string> { "Admin" });
+
+            var handler = new GetUserByUsernameHandler(_userManagerMock.Object);
+            var result = await handler.Handle(new GetUserByUsernameQuery("admin"), CancellationToken.None);
+
+            result.Should().NotBeNull();
+            result.UserName.Should().Be("admin");
+            result.Role.Should().Be("Admin");
+        }
+
+        [Fact]
+        public async Task GetByUsername_WhenUserNotFound_ThrowsNotFoundException()
+        {
+            _userManagerMock.Setup(u => u.FindByNameAsync("unknown")).ReturnsAsync((ApplicationUser?)null);
+
+            var handler = new GetUserByUsernameHandler(_userManagerMock.Object);
+            var act = async () => await handler.Handle(new GetUserByUsernameQuery("unknown"), CancellationToken.None);
+
+            await act.Should().ThrowAsync<NotFoundException>();
+        }
     }
 }

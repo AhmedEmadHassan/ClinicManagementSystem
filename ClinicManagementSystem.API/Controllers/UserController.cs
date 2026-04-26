@@ -49,5 +49,9 @@ namespace ClinicManagementSystem.API.Controllers
         [HttpPut("{id}/change-role")]
         public async Task<IActionResult> ChangeRole(string id, [FromBody] ChangeUserRoleDTO dto)
             => Success(await _mediator.Send(new ChangeUserRoleCommand(id, dto)));
+
+        [HttpGet("username/{userName}")]
+        public async Task<IActionResult> GetByUsername(string userName)
+            => Success(await _mediator.Send(new GetUserByUsernameQuery(userName)));
     }
 }

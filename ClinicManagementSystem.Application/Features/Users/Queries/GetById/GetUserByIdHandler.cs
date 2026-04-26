@@ -23,7 +23,7 @@ namespace ClinicManagementSystem.Application.Features.Users.Queries.GetById
             var user = await _userManager.FindByIdAsync(request.Id);
 
             if (user is null)
-                throw new NotFoundException("User", 0);
+                throw new NotFoundException("User", request.Id);
 
             var roles = await _userManager.GetRolesAsync(user);
 
