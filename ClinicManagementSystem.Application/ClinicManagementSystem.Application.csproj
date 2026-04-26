@@ -21,4 +21,8 @@
     <ProjectReference Include="..\ClinicManagementSystem.Domain\ClinicManagementSystem.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Users\Commands\Create\" />
+  </ItemGroup>
+
 </Project>
