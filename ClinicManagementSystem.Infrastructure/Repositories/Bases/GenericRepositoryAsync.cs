@@ -138,9 +138,51 @@ namespace ClinicManagementSystem.Infrastructure.Repositories.Bases
                 TotalCount = totalCount
             };
         }
+        public async Task<PaginatedResponse<TResult>> GetPagedAsync<TResult>(
+                                                                        int pageNumber,
+                                                                        int pageSize,
+                                                                        Expression<Func<T, TResult>> selector,
+                                                                        Expression<Func<T, bool>>? predicate = null)
+        {
+            var query = _dbContext.Set<T>().AsNoTracking();
+
+            if (predicate is not null)
+                query = query.Where(predicate);
+
+            var totalCount = await query.CountAsync();
+
+            var data = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(selector)
+                .ToListAsync();
+
+            return new PaginatedResponse<TResult>
+            {
+                Data = data,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount
+            };
+        }
         public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
         {
             return await _dbContext.Set<T>().AnyAsync(predicate);
+        }
+        public async Task<List<TResult>> GetAllAsync<TResult>(
+                                                                        Expression<Func<T, TResult>> selector,
+                                                                        Expression<Func<T, bool>>? predicate = null)
+        {
+            var query = _dbContext.Set<T>().AsNoTracking();
+
+            if (predicate is not null)
+                query = query.Where(predicate);
+
+            return await query.Select(selector).ToListAsync();
+        }
+        public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbContext.Set<T>().AsNoTracking().FirstOrDefaultAsync(predicate);
         }
         #endregion
     }

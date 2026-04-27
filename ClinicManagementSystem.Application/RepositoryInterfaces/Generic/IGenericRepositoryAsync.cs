@@ -25,6 +25,15 @@ namespace ClinicManagementSystem.Application.RepositoryInterfaces.Generic
             int pageNumber,
             int pageSize,
             Expression<Func<T, TResult>> selector);
+        Task<PaginatedResponse<TResult>> GetPagedAsync<TResult>(
+            int pageNumber,
+            int pageSize,
+            Expression<Func<T, TResult>> selector,
+            Expression<Func<T, bool>>? predicate = null);
         Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
+        Task<List<TResult>> GetAllAsync<TResult>(
+            Expression<Func<T, TResult>> selector,
+            Expression<Func<T, bool>>? predicate = null);
+        Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate);
     }
 }
