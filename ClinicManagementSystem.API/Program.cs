@@ -75,7 +75,18 @@ try
         options.SubstituteApiVersionInUrl = true;
     });
     #endregion
-
+    #region Add CORS Policy
+    builder.Services.AddCors(options =>
+    {
+        options.AddPolicy("AllowAngular", policy =>
+        {
+            policy
+                .WithOrigins("http://localhost:4200") // Angular app
+                .AllowAnyHeader()
+                .AllowAnyMethod();
+        });
+    });
+    #endregion
     #endregion
     var app = builder.Build();
     #region Apply Migrations
@@ -153,6 +164,7 @@ try
     #region Use My Middleware
     app.UseMiddleware<GlobalExceptionMiddleware>();
     #endregion
+    app.UseCors("AllowAngular");   // ✅ ADD THIS FIRST
     app.UseHttpsRedirection();
     // Add middleware — must be before UseAuthentication
     app.UseRateLimiter();
