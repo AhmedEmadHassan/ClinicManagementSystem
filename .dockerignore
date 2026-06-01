@@ -11,6 +11,5 @@
 README.md
 docker-compose*.yml
 Dockerfile
-ClinicManagementSystem.UnitTests
 .dockerignore
 docker-compose.override.yml
