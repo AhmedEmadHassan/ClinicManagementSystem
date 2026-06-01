@@ -34,17 +34,17 @@ namespace ClinicManagementSystem.API.Controllers
             => Success(await _mediator.Send(new GetAppointmentByIdQuery(id)));
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Receptionist")]
+        [Authorize(Roles = "Admin,Receptionist,Patient")]
         public async Task<IActionResult> Create([FromBody] CreateAppointmentDTO dto)
             => Created(await _mediator.Send(new CreateAppointmentCommand(dto)));
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,Receptionist")]
+        [Authorize(Roles = "Admin,Receptionist,Patient")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateAppointmentDTO dto)
             => Success(await _mediator.Send(new UpdateAppointmentCommand(id, dto)));
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Patient")]
         public async Task<IActionResult> Delete(int id)
         {
             await _mediator.Send(new DeleteAppointmentCommand(id));
