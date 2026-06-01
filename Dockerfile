@@ -7,7 +7,7 @@ COPY ClinicManagementSystem.API/*.csproj ./ClinicManagementSystem.API/
 COPY ClinicManagementSystem.Application/*.csproj ./ClinicManagementSystem.Application/
 COPY ClinicManagementSystem.Domain/*.csproj ./ClinicManagementSystem.Domain/
 COPY ClinicManagementSystem.Infrastructure/*.csproj ./ClinicManagementSystem.Infrastructure/
-COPY ClinicManagementSystem.UnitTests/*.csproj ./ClinicManagementSystem.Infrastructure/
+COPY ClinicManagementSystem.UnitTests/*.csproj ./ClinicManagementSystem.UnitTests/
 # Restore libraries
 RUN dotnet restore
 # Copy Everything
@@ -21,4 +21,4 @@ WORKDIR /app
 COPY --from=build-env /app/out .
 ENV ASPNETCORE_URLS=http://+:80
 EXPOSE 80
-ENTRYPOINT ["dotnet", "ClinicManagementSystem.dll"]
+ENTRYPOINT ["dotnet", "ClinicManagementSystem.API.dll"]
