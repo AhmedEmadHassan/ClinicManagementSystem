@@ -8,6 +8,7 @@ services:
       context: .
     environment:
       - ConnectionStrings__SqlServerConnection=Server=clinic-db;Database=clinicmanagementDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;
+      - JwtSettings__Key=${{JWT_KEY}}
     depends_on:
       clinic-db:
         condition: service_healthy
