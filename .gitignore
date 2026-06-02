@@ -5,6 +5,7 @@
 
 Logs/
 .env
+
 # User-specific files
 *.rsuser
 *.suo

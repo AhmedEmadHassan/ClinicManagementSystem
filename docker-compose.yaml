@@ -1,0 +1,44 @@
+services:
+  clinic-api:
+    image: test-clinic
+    restart: on-failure
+    ports:
+      - 8080:80
+    build:
+      context: .
+    environment:
+      - ConnectionStrings__SqlServerConnection=Server=clinic-db;Database=clinicmanagementDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;
+    depends_on:
+      clinic-db:
+        condition: service_healthy
+    networks:
+      - clinicnet
+  clinic-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${SA_PASSWORD}
+    ports:
+      - 8001:1433
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${SA_PASSWORD} -Q 'SELECT 1' -No",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - clinicnet
+    volumes:
+      - clinic-db-volume:/var/opt/mssql
+
+networks:
+  clinicnet:
+    driver: bridge
+
+volumes:
+  clinic-db-volume:

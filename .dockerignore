@@ -11,6 +11,5 @@
 README.md
 docker-compose*.yml
 Dockerfile
-
 .dockerignore
 docker-compose.override.yml

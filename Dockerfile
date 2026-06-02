@@ -1,40 +1,24 @@
-# ================================
-# Stage 1: Build
-# ================================
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-WORKDIR /src
+#Prepare Stage
 
-# Copy solution and project files
-COPY ClinicManagementSystem.slnx .
-COPY ClinicManagementSystem.API/ClinicManagementSystem.API.csproj                             ClinicManagementSystem.API/
-COPY ClinicManagementSystem.Application/ClinicManagementSystem.Application.csproj             ClinicManagementSystem.Application/
-COPY ClinicManagementSystem.Infrastructure/ClinicManagementSystem.Infrastructure.csproj       ClinicManagementSystem.Infrastructure/
-COPY ClinicManagementSystem.Domain/ClinicManagementSystem.Domain.csproj                       ClinicManagementSystem.Domain/
-COPY ClinicManagementSystem.UnitTests/ClinicManagementSystem.UnitTests.csproj                 ClinicManagementSystem.UnitTests/
-
-# Restore dependencies
-RUN dotnet restore
-
-# Copy all source files
-COPY . .
-
-# Build and publish
-WORKDIR /src/ClinicManagementSystem.API
-RUN dotnet publish -c Release -o /app/publish --no-restore
-
-# ================================
-# Stage 2: Runtime
-# ================================
-FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build-env
 WORKDIR /app
+COPY *.slnx ./
+COPY ClinicManagementSystem.API/*.csproj ./ClinicManagementSystem.API/
+COPY ClinicManagementSystem.Application/*.csproj ./ClinicManagementSystem.Application/
+COPY ClinicManagementSystem.Domain/*.csproj ./ClinicManagementSystem.Domain/
+COPY ClinicManagementSystem.Infrastructure/*.csproj ./ClinicManagementSystem.Infrastructure/
+COPY ClinicManagementSystem.UnitTests/*.csproj ./ClinicManagementSystem.UnitTests/
+# Restore libraries
+RUN dotnet restore
+# Copy Everything
+COPY . .
+# Build and Publish
+RUN dotnet publish -c release -o out
 
-# Create logs directory
-RUN mkdir -p /app/Logs
-
-# Copy published output
-COPY --from=build /app/publish .
-
-# Expose port
-EXPOSE 8080
-
+# Build Runtime Image
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+WORKDIR /app
+COPY --from=build-env /app/out .
+ENV ASPNETCORE_URLS=http://+:80
+EXPOSE 80
 ENTRYPOINT ["dotnet", "ClinicManagementSystem.API.dll"]

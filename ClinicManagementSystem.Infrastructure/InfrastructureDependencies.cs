@@ -19,7 +19,15 @@ namespace ClinicManagementSystem.Infrastructure
         {
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(
-                    configuration.GetConnectionString("SqlServerConnection")
+                    configuration.GetConnectionString("SqlServerConnection"),
+                    sqlOptions =>
+                    {
+                        sqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 10,
+                            maxRetryDelay: TimeSpan.FromSeconds(5),
+                            errorNumbersToAdd: null
+                        );
+                    }
                 ));
 
             AddIdentityDependencies(services, configuration);
