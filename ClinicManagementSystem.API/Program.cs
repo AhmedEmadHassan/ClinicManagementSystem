@@ -11,9 +11,8 @@ using Microsoft.OpenApi;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(new ConfigurationBuilder()
-        .AddJsonFile("appsettings.json")
-        .Build())
+    .MinimumLevel.Information()
+    .WriteTo.Console()
     .CreateBootstrapLogger();
 try
 {
@@ -21,7 +20,19 @@ try
     var builder = WebApplication.CreateBuilder(args);
     // Add Serilog
     builder.Host.UseSerilog((context, services, configuration) =>
-        configuration.ReadFrom.Configuration(context.Configuration));
+    {
+        configuration
+            .MinimumLevel.Information()
+            .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+            .MinimumLevel.Override("System", Serilog.Events.LogEventLevel.Warning)
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .WriteTo.File(
+                path: "Logs/log-.txt",
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 7
+            );
+    });
     #region Services
 
     // Add services to the container.
@@ -150,7 +161,7 @@ try
     }
     #endregion
     // Configure the HTTP request pipeline.
-    if (app.Environment.IsDevelopment())
+    if (app.Environment.IsDevelopment() || true)
     {
         // Removed: app.MapOpenApi()
         app.UseSwagger();    // Added: enables Swagger JSON endpoint
