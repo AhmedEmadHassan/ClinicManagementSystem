@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ClinicManagementSystem.API.Controllers
 {
     [ApiVersion("1.0")]
-    [Authorize(Roles = "Admin,Receptionist")]
+    [Authorize(Roles = "Admin,Receptionist,Patient")]
     public class PatientController : BaseController
     {
         private readonly IMediator _mediator;

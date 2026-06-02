@@ -175,8 +175,8 @@ try
     #region Use My Middleware
     app.UseMiddleware<GlobalExceptionMiddleware>();
     #endregion
-    app.UseCors("AllowAngular");   // ✅ ADD THIS FIRST
     app.UseHttpsRedirection();
+    app.UseCors("AllowAngular");
     // Add middleware — must be before UseAuthentication
     app.UseRateLimiter();
     app.UseAuthentication();
