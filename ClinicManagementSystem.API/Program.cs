@@ -10,13 +10,14 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi;
 using Serilog;
 
+
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .WriteTo.Console()
     .CreateBootstrapLogger();
 try
 {
-    Log.Information("Starting Clinic Management System API");
+
     var builder = WebApplication.CreateBuilder(args);
     // Add Serilog
     builder.Host.UseSerilog((context, services, configuration) =>
@@ -33,6 +34,7 @@ try
                 retainedFileCountLimit: 7
             );
     });
+    Log.Information("Starting Clinic Management System API");
     #region Services
 
     // Add services to the container.
@@ -45,8 +47,8 @@ try
     //builder.Services.AddControllers();
     #endregion
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-    builder.Services.AddEndpointsApiExplorer(); // Added: required for Swagger to discover endpoints
     #region Add Swagger Gen
+    builder.Services.AddEndpointsApiExplorer(); // Added: required for Swagger to discover endpoints
     builder.Services.AddSwaggerGen(options =>
     {
         options.SwaggerDoc("v1", new OpenApiInfo { Title = "Clinic Management System", Version = "v1" });
