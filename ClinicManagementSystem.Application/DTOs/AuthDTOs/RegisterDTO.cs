@@ -5,10 +5,6 @@
         public string UserName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
-        public string Role { get; set; } = string.Empty; // "Admin", "Doctor", "Patient", "Receptionist"
-
-        // Required only if Role is "Doctor"
-        public int? DoctorSpecializationId { get; set; }
 
         // Shared for Doctor and Patient
         public string? Phone { get; set; }

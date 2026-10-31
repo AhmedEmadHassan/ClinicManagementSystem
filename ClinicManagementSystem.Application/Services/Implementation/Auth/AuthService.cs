@@ -37,33 +37,13 @@ namespace ClinicManagementSystem.Application.Services.Implementation.Auth
 
         public async Task<AuthResponseDTO> Register(RegisterDTO dto)
         {
-            _logger.LogInformation("Register attempt for username: {UserName} with role: {Role}", dto.UserName, dto.Role);
+            _logger.LogInformation("Register attempt for username: {UserName} with role: {Role}", dto.UserName, "Patient");
 
             var existingUser = await _userManager.FindByNameAsync(dto.UserName);
             if (existingUser is not null)
             {
                 _logger.LogWarning("Register failed — username already exists: {UserName}", dto.UserName);
                 throw new DuplicateException($"Username '{dto.UserName}' is already taken.");
-            }
-
-            var validRoles = new[] { "Admin", "Doctor", "Patient", "Receptionist" };
-            if (!validRoles.Contains(dto.Role))
-            {
-                _logger.LogWarning("Register failed — invalid role: {Role}", dto.Role);
-                throw new BadRequestException($"Invalid role '{dto.Role}'. Accepted values are: {string.Join(", ", validRoles)}.");
-            }
-
-            if (dto.Role == "Doctor" && dto.DoctorSpecializationId is null)
-            {
-                _logger.LogWarning("Register failed — DoctorSpecializationId is required for Doctor role");
-                throw new BadRequestException("DoctorSpecializationId is required when registering a Doctor.");
-            }
-
-            if ((dto.Role == "Doctor" || dto.Role == "Patient") &&
-                (string.IsNullOrWhiteSpace(dto.Phone) || string.IsNullOrWhiteSpace(dto.Gender)))
-            {
-                _logger.LogWarning("Register failed — Phone and Gender are required for {Role} role", dto.Role);
-                throw new BadRequestException("Phone and Gender are required when registering a Doctor or Patient.");
             }
 
             var user = new ApplicationUser
@@ -79,51 +59,24 @@ namespace ClinicManagementSystem.Application.Services.Implementation.Auth
                 throw new BadRequestException(string.Join(", ", result.Errors.Select(e => e.Description)));
             }
 
-            await _userManager.AddToRoleAsync(user, dto.Role);
-
-            if (dto.Role == "Doctor")
+            await _userManager.AddToRoleAsync(user, "Patient");
+            var patient = new Patient
             {
-                var specializationExists = await _unitOfWork.DoctorSpecializations.AnyAsync(s => s.Id == dto.DoctorSpecializationId);
-                if (!specializationExists)
-                    throw new NotFoundException(nameof(DoctorSpecialization), dto.DoctorSpecializationId!.Value);
+                Name = dto.UserName,
+                Phone = dto.Phone!,
+                Gender = GenderHelper.Parse(dto.Gender!),
+                DateOfBirth = dto.DateOfBirth,
+                Address = dto.Address,
+                Summary = dto.Summary
+            };
 
-                var doctor = new Doctor
-                {
-                    Name = dto.UserName,
-                    Phone = dto.Phone!,
-                    Gender = GenderHelper.Parse(dto.Gender!),
-                    DateOfBirth = dto.DateOfBirth,
-                    Address = dto.Address,
-                    Summary = dto.Summary,
-                    DoctorSpecializationId = dto.DoctorSpecializationId!.Value
-                };
+            await _unitOfWork.Patients.AddAsync(patient);
+            await _unitOfWork.SaveChangesAsync();
 
-                await _unitOfWork.Doctors.AddAsync(doctor);
-                await _unitOfWork.SaveChangesAsync();
+            user.PatientId = patient.Id;
+            await _userManager.UpdateAsync(user);
 
-                user.DoctorId = doctor.Id;
-                await _userManager.UpdateAsync(user);
-            }
-            else if (dto.Role == "Patient")
-            {
-                var patient = new Patient
-                {
-                    Name = dto.UserName,
-                    Phone = dto.Phone!,
-                    Gender = GenderHelper.Parse(dto.Gender!),
-                    DateOfBirth = dto.DateOfBirth,
-                    Address = dto.Address,
-                    Summary = dto.Summary
-                };
-
-                await _unitOfWork.Patients.AddAsync(patient);
-                await _unitOfWork.SaveChangesAsync();
-
-                user.PatientId = patient.Id;
-                await _userManager.UpdateAsync(user);
-            }
-
-            _logger.LogInformation("User registered successfully: {UserName} with role: {Role}", dto.UserName, dto.Role);
+            _logger.LogInformation("User registered successfully: {UserName} with role: {Role}", dto.UserName, "Patient");
             return await GenerateAuthResponse(user);
         }
 
